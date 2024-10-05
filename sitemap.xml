@@ -1,0 +1,195 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  
+  <url>
+    <loc>https://crackme.net/articles/burp_ssl_bug/</loc>
+    
+    <lastmod>2024-10-05</lastmod>
+    
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
+    <loc>https://crackme.net/articles/github_run_away/</loc>
+    
+    <lastmod>2024-10-02</lastmod>
+    
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
+    <loc>https://crackme.net/articles/appDomainManager_exploit/</loc>
+    
+    <lastmod>2024-10-01</lastmod>
+    
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
+    <loc>https://crackme.net/articles/wintrust_example/</loc>
+    
+    <lastmod>2024-10-01</lastmod>
+    
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
+    <loc>https://crackme.net/articles/run_as_system/</loc>
+    
+    <lastmod>2024-10-01</lastmod>
+    
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
+    <loc>https://crackme.net/articles/ring3_rootkit/</loc>
+    
+    <lastmod>2024-10-01</lastmod>
+    
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
+    <loc>https://crackme.net/articles/mcbox_stealer/</loc>
+    
+    <lastmod>2024-10-01</lastmod>
+    
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
+    <loc>https://crackme.net/articles/lumma_stealer_analysis/</loc>
+    
+    <lastmod>2024-10-01</lastmod>
+    
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
+    <loc>https://crackme.net/articles/hackbar_cracked/</loc>
+    
+    <lastmod>2024-10-01</lastmod>
+    
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
+    <loc>https://crackme.net/articles/github_email_trace/</loc>
+    
+    <lastmod>2024-10-01</lastmod>
+    
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
+    <loc>https://crackme.net/articles/evil_sln/</loc>
+    
+    <lastmod>2024-10-01</lastmod>
+    
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
+    <loc>https://crackme.net/articles/chrome_debugger_force_bypass/</loc>
+    
+    <lastmod>2024-10-01</lastmod>
+    
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
+    <loc>https://crackme.net/about/index.html</loc>
+    
+    <lastmod>2024-09-23</lastmod>
+    
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+
+  <url>
+    <loc>https://crackme.net/</loc>
+    <lastmod>2024-10-05</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>1.0</priority>
+  </url>
+
+  
+  <url>
+    <loc>https://crackme.net/tags/%E5%AE%89%E5%85%A8%E5%B7%A5%E5%85%B7/</loc>
+    <lastmod>2024-10-05</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  
+  <url>
+    <loc>https://crackme.net/tags/%E6%B8%97%E9%80%8F%E6%B5%8B%E8%AF%95/</loc>
+    <lastmod>2024-10-05</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  
+  <url>
+    <loc>https://crackme.net/tags/%E7%BD%91%E7%BB%9C%E5%AE%89%E5%85%A8/</loc>
+    <lastmod>2024-10-05</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  
+  <url>
+    <loc>https://crackme.net/tags/%E9%80%86%E5%90%91%E5%B7%A5%E7%A8%8B/</loc>
+    <lastmod>2024-10-05</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  
+  <url>
+    <loc>https://crackme.net/tags/Windows/</loc>
+    <lastmod>2024-10-05</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  
+  <url>
+    <loc>https://crackme.net/tags/Github/</loc>
+    <lastmod>2024-10-05</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  
+  <url>
+    <loc>https://crackme.net/tags/%E7%BC%96%E7%A8%8B/</loc>
+    <lastmod>2024-10-05</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  
+  <url>
+    <loc>https://crackme.net/tags/%E7%97%85%E6%AF%92%E5%88%86%E6%9E%90/</loc>
+    <lastmod>2024-10-05</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  
+  <url>
+    <loc>https://crackme.net/tags/%E6%88%91%E7%9A%84%E4%B8%96%E7%95%8C/</loc>
+    <lastmod>2024-10-05</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  
+
+  
+</urlset>
