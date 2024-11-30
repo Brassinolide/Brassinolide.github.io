@@ -4,6 +4,27 @@
   
   
   <entry>
+    <title>C语言字符串格式化详解</title>
+    <link href="/articles/string_formatter/"/>
+    <url>/articles/string_formatter/</url>
+    
+    <content type="html"><![CDATA[<p>最近在C语言课上见到了一些奇怪的printf格式化参数，正好我对这方面也不是很懂，所以就参考一些文章总结了一下</p><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs C++">%[标志][宽度][.精度][参数大小]类型<br></code></pre></td></tr></table></figure><h1 id="类型"><a href="#类型" class="headerlink" title="类型"></a>类型</h1><table><thead><tr><th>类型</th><th>参数</th><th>说明</th></tr></thead><tbody><tr><td><code>c</code>(小写)</td><td>字符</td><td>与 <code>printf</code> 函数一起使用时，指定单字节字符；与 <code>wprintf</code> 函数一起使用时，指定宽字符</td></tr><tr><td><code>C</code>(大写)</td><td>字符</td><td>与 <code>printf</code> 函数一起使用时，指定宽字符；与 <code>wprintf</code> 函数一起使用时，指定单字节字符</td></tr><tr><td><code>d</code></td><td>整数</td><td>带符号十进制整数（d和i主要区别在scanf中，d明确表示十进制整数，比如输入0x1A将被解析为0。而i更灵活，可以自动识别不同的基数，比如输入0x1A将被解析为26）</td></tr><tr><td><code>i</code></td><td>整数</td><td>同上</td></tr><tr><td><code>u</code></td><td>整数</td><td>无符号十进制整数</td></tr><tr><td><code>o</code></td><td>整数</td><td>无符号八进制整数</td></tr><tr><td><code>x</code>(小写)</td><td>整数</td><td>无符号十六进制整数，小写x输出小写字母，例如aabb。大写X输出大写字母，例如AABB</td></tr><tr><td><code>X</code>(大写)</td><td>整数</td><td>同上</td></tr><tr><td><code>e</code></td><td>浮点</td><td>有符号浮点(科学计数法表示)。e使用小写e来表示指数，例如1.234568e+05。E使用大写E来表示指数，例如1.234568E+05</td></tr><tr><td><code>E</code></td><td>浮点</td><td>同上</td></tr><tr><td><code>f</code></td><td>浮点</td><td>有符号十进制浮点(固定小数点表示)，小写f的<code>infinity</code> 和 <code>nan</code> 为小写，大写F为大写</td></tr><tr><td><code>F</code></td><td>浮点</td><td>同上</td></tr><tr><td><code>g</code></td><td>浮点</td><td>以最紧凑的形式输出浮点数，自动选择是固定小数点表示法还是科学计数法。g和G的区别也在大小写上</td></tr><tr><td><code>G</code></td><td>浮点</td><td>同上</td></tr><tr><td><code>a</code></td><td>浮点</td><td>有符号十六进制浮点(类科学计数法表示)，例如双精度3.14159输出0x1.921f9f01b866ep+1。a和A的区别也在大小写上</td></tr><tr><td><code>A</code></td><td>浮点</td><td>同上</td></tr><tr><td><code>n</code></td><td>指向整数的指针</td><td>一个特殊的类型，不用来格式化数据，而是记录到目前为止已成功输出(或输入)的字符数量。例如语句<code>printf(&quot;Hello World%n&quot;, &amp;a);</code>执行完后变量a的值为11。由于安全原因，msvc已禁用此类型</td></tr><tr><td><code>p</code></td><td>指针</td><td>以十六进制形式输出变量地址</td></tr><tr><td><code>s</code>(小写)</td><td>字符串</td><td>与 <code>printf</code> 函数一起使用时，指定单字节或多字节字符串；与 <code>wprintf</code> 函数一起使用时，指定宽字符字符串。 将于第一个空字符之前或达到精度值时显示字符。</td></tr><tr><td><code>S</code>(大写)</td><td>字符串</td><td>与 <code>printf</code> 函数一起使用时，指定宽字符字符串；与 <code>wprintf</code> 函数一起使用时，指定单字节或多字节字符串。 将于第一个空字符之前或达到精度值时显示字符。</td></tr></tbody></table><h1 id="标志"><a href="#标志" class="headerlink" title="标志"></a>标志</h1><table><thead><tr><th>标志</th><th>说明</th><th>默认值</th></tr></thead><tbody><tr><td><code>-</code></td><td>左对齐</td><td>右对齐</td></tr><tr><td><code>+</code></td><td>不论正数还是负数，都添加符号前缀（+或 -）</td><td>只对负数添加符号前缀（-）</td></tr><tr><td><code>#</code></td><td>输出非十进制数时自动添加前缀（0 0x 0X）</td><td>不添加前缀</td></tr><tr><td></td><td>输出固定小数点表示的浮点数时确保小数点总是存在（即使小数部分没有数字）</td><td>小数部分无数字将被忽略</td></tr><tr><td><code>0</code></td><td>当与宽度一起使用时，用零填充空白区域</td><td>用空格填充空白区域</td></tr></tbody></table><h1 id="宽度"><a href="#宽度" class="headerlink" title="宽度"></a>宽度</h1><p>定义了最小的字段宽度，不足宽度的将被自动填充</p><p>如果宽度填入星号 (<code>*</code>)，则从参数列表中获取宽度</p><p>示例代码：</p><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><code class="hljs C++"><span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;%6d\n&quot;</span>, <span class="hljs-number">123</span>);<span class="hljs-comment">//输出   123（前面三个空格）</span><br><br><span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;%06d\n&quot;</span>, <span class="hljs-number">123</span>);<span class="hljs-comment">//输出000123</span><br><br><span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;%0*d\n&quot;</span>, <span class="hljs-number">6</span>, <span class="hljs-number">123</span>);<span class="hljs-comment">//输出000123，与上面的语句等价</span><br><br><span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;%06d\n&quot;</span>, <span class="hljs-number">123456789</span>);<span class="hljs-comment">//输出123456789</span><br><br><span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;%06s\n&quot;</span>, <span class="hljs-string">&quot;123456789&quot;</span>);<span class="hljs-comment">//输出123456789（不会截断，区别于精度！）</span><br></code></pre></td></tr></table></figure><h1 id="精度"><a href="#精度" class="headerlink" title="精度"></a>精度</h1><ul><li>对于浮点数，它定义了小数点后的位数。</li><li>对于字符串，它限制了最大字符数。</li><li>对于整数类型，它指定了最少的数字位数，不足的部分以<code>0</code>填充。（区别于宽度，宽度默认以空格填充）</li><li>如果省略，对于某些类型（如<code>%g</code>和<code>%G</code>），则意味着“尽可能高的精度”。</li></ul><p>如果精度填入星号 (<code>*</code>)，则从参数列表中获取精度（类似上面的宽度）</p><p>与宽度不同的是，精度规范可能导致输出值截断或浮点值舍入</p><p>如果精度为 0 且要转换的值为 0，则无字符输出</p><p>示例代码：</p><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><code class="hljs C++"><span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;%.0d\n&quot;</span>, <span class="hljs-number">0</span>);<span class="hljs-comment">//不会输出任何内容</span><br><br><span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;%.6d\n&quot;</span>, <span class="hljs-number">123</span>);<span class="hljs-comment">//输出000123</span><br><br><span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;%.3f\n&quot;</span>, <span class="hljs-number">3.14159265</span>);<span class="hljs-comment">//四舍五入保留三位小数，输出3.142</span><br><br><span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;%.*f\n&quot;</span>, <span class="hljs-number">3</span>, <span class="hljs-number">3.14159265</span>); <span class="hljs-comment">//输出3.142，与上面的语句等价</span><br><br><span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;%.6s\n&quot;</span>, <span class="hljs-string">&quot;123456789&quot;</span>);<span class="hljs-comment">//对字符串截断到6位，仅输出123456（会截断，区别于宽度！）</span><br><br><span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;%.6d\n&quot;</span>, <span class="hljs-number">123456789</span>);<span class="hljs-comment">//对整数不会进行截断，输出123456789</span><br></code></pre></td></tr></table></figure><h1 id="参数大小"><a href="#参数大小" class="headerlink" title="参数大小"></a>参数大小</h1><table><thead><tr><th>参数类型</th><th>前缀</th></tr></thead><tbody><tr><td><code>int8</code></td><td><code>hh</code></td></tr><tr><td><code>int16</code></td><td><code>h</code></td></tr><tr><td><code>int32</code></td><td><code>I32</code>或<code>l</code>(小写L)</td></tr><tr><td><code>int64</code></td><td><code>j</code>或<code>I64</code>或<code>ll</code>(小写L)</td></tr><tr><td><code>double</code></td><td><code>l</code>(大小写L均可)</td></tr></tbody></table><p>示例代码：</p><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><code class="hljs C++"><span class="hljs-comment">//输出1099511627775</span><br><span class="hljs-type">int64_t</span> a = <span class="hljs-number">0xffffffffff</span>;<br><span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;%lld\n&quot;</span>, a);<br><span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;%I64d\n&quot;</span>, a);<br><span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;%jd\n&quot;</span>, a);<br><br><span class="hljs-comment">//输出3.14159265358979</span><br><span class="hljs-type">double</span> b = <span class="hljs-number">3.14159265358979</span>;<br><span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;%.14lf\n&quot;</span>, b);<br></code></pre></td></tr></table></figure><h1 id="一些特殊修饰符"><a href="#一些特殊修饰符" class="headerlink" title="一些特殊修饰符"></a>一些特殊修饰符</h1><p><code>%n$</code> 位置参数，用于指定参数位置（gcc非标拓展，msvc不支持）</p><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs C++"><span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;%2$d %1$d&quot;</span>,<span class="hljs-number">10</span>,<span class="hljs-number">20</span> ); <span class="hljs-comment">//输出20 10</span><br></code></pre></td></tr></table></figure>]]></content>
+    
+    
+    
+    <tags>
+      
+      <tag>编程</tag>
+      
+      <tag>C语言</tag>
+      
+    </tags>
+    
+  </entry>
+  
+  
+  
+  <entry>
     <title>编写一个流量消耗器</title>
     <link href="/articles/fuck_isp/"/>
     <url>/articles/fuck_isp/</url>
@@ -35,11 +56,11 @@
     
     <tags>
       
-      <tag>编程</tag>
+      <tag>Windows</tag>
       
       <tag>安全工具</tag>
       
-      <tag>Windows</tag>
+      <tag>编程</tag>
       
     </tags>
     
@@ -81,11 +102,11 @@
     
     <tags>
       
-      <tag>编程</tag>
-      
       <tag>网络安全</tag>
       
       <tag>Github</tag>
+      
+      <tag>编程</tag>
       
     </tags>
     
@@ -104,9 +125,9 @@
     
     <tags>
       
-      <tag>编程</tag>
-      
       <tag>网络安全</tag>
+      
+      <tag>编程</tag>
       
     </tags>
     
@@ -125,11 +146,11 @@
     
     <tags>
       
-      <tag>编程</tag>
-      
       <tag>网络安全</tag>
       
       <tag>Windows</tag>
+      
+      <tag>编程</tag>
       
     </tags>
     
@@ -230,11 +251,11 @@
     
     <tags>
       
-      <tag>编程</tag>
-      
       <tag>网络安全</tag>
       
       <tag>Windows</tag>
+      
+      <tag>编程</tag>
       
     </tags>
     
@@ -253,11 +274,11 @@
     
     <tags>
       
-      <tag>编程</tag>
-      
       <tag>网络安全</tag>
       
       <tag>Windows</tag>
+      
+      <tag>编程</tag>
       
     </tags>
     
