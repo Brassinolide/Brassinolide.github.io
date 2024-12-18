@@ -4,6 +4,27 @@
   
   
   <entry>
+    <title>对某校园跑的分析</title>
+    <link href="/articles/campusrun_analysis/"/>
+    <url>/articles/campusrun_analysis/</url>
+    
+    <content type="html"><![CDATA[<p>本文只讲原理，不提供软件，<strong>切莫以身试校规</strong></p><p>校园跑是微信小程序，没有也无法实现反模拟器和反分析，这给了我们极大的便利</p><p>常规方法配置好模拟器抓包环境，打开校园跑，开始分析</p><p>从抓到的请求包可以看出，程序逻辑相当简单：开始跑步时请求<code>/start/running</code>获取记录码，跑步中每5秒发送一次心跳包<code>/save/running/track</code>报告坐标，结束跑步时请求<code>/finish/running</code>并判定成绩</p><p>那破解方法也很简单，要么伪造新数据，要么重发老数据</p><p>伪造新数据实现起来有点麻烦。重发老数据相较而言就很简单，模拟器虚拟GPS定位跑一趟，保存抓到的数据重发</p><p>心跳包的格式类似这种，我们需要的是经度和纬度数据</p><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs plaintext">/save/running/track?recordCode=&amp;latitude=&amp;longitude=&amp;lastLatitude=&amp;lastLongitude=&amp;time=&amp;startTime=&amp;lastTime=&amp;status=&amp;trackIndex=&amp;type=<br></code></pre></td></tr></table></figure><p>burp导出的是xml文件，懒得解析了就直接拿正则表达式暴力匹配，拿出所有数据保存到json中便于遍历</p><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><code class="hljs python"><span class="hljs-keyword">import</span> re,json<br><br><span class="hljs-keyword">with</span> <span class="hljs-built_in">open</span>(<span class="hljs-string">&quot;burp.xml&quot;</span>) <span class="hljs-keyword">as</span> f:<br>    matches = re.findall(<span class="hljs-string">r&#x27;(?P&lt;key&gt;latitude|longitude|lastLatitude|lastLongitude)=(?P&lt;value&gt;[\d.-]+)&#x27;</span>, f.read())<br>    data = []<br>    <span class="hljs-keyword">for</span> i <span class="hljs-keyword">in</span> <span class="hljs-built_in">range</span>(<span class="hljs-number">0</span>,<span class="hljs-built_in">len</span>(matches),<span class="hljs-number">4</span>):<br>        data.append(&#123;matches[i][<span class="hljs-number">0</span>]:matches[i][<span class="hljs-number">1</span>],matches[i+<span class="hljs-number">1</span>][<span class="hljs-number">0</span>]:matches[i+<span class="hljs-number">1</span>][<span class="hljs-number">1</span>],matches[i+<span class="hljs-number">2</span>][<span class="hljs-number">0</span>]:matches[i+<span class="hljs-number">2</span>][<span class="hljs-number">1</span>],matches[i+<span class="hljs-number">3</span>][<span class="hljs-number">0</span>]:matches[i+<span class="hljs-number">3</span>][<span class="hljs-number">1</span>]&#125;)<br>    <span class="hljs-keyword">with</span> <span class="hljs-built_in">open</span>(<span class="hljs-string">&quot;data.json&quot;</span>,<span class="hljs-string">&quot;w&quot;</span>) <span class="hljs-keyword">as</span> out:<br>        json.dump(data, out)<br></code></pre></td></tr></table></figure><p>有了数据，写程序重发就行。不过这种方法的缺陷也很明显，那就是每次跑步的路径和配速都一样，加大了被发现的概率（也许可以实现更高级的算法，对坐标数据添加一些噪声，相信后人的智慧，笑）</p><h1 id="检测作弊"><a href="#检测作弊" class="headerlink" title="检测作弊"></a>检测作弊</h1><p>我没法查看后台，检测方法也只是猜测</p><p>跑步路程分为总跑步路程和有效跑步路程，现实中跑步因为有各种干扰因素存在，总有一些违规的数据，后台使用了一些申必算法过滤掉了无效数据，最终的有效跑步路程小于总跑步路程</p><p>但是模拟GPS定位就没有任何干扰，导致有效跑步路程等于总跑步路程，检测方法不言而喻</p><p>也可以检测跑步的路径和配速，检测是否雷同</p><p>这些方法很容易用算法自动化实现，后台报警，人工复核，一抓一个准！</p><p>这当然不是自断后路。这个校园跑可以保存的设计就很人性化，每次去教室、回寝室、去食堂的时候打开校园跑，一天下来也走的差不多了，所以实在没有必要耍这种高风险的小聪明</p>]]></content>
+    
+    
+    
+    <tags>
+      
+      <tag>网络安全</tag>
+      
+      <tag>编程</tag>
+      
+    </tags>
+    
+  </entry>
+  
+  
+  
+  <entry>
     <title>C语言字符串格式化详解</title>
     <link href="/articles/string_formatter/"/>
     <url>/articles/string_formatter/</url>
@@ -56,9 +77,9 @@
     
     <tags>
       
-      <tag>Windows</tag>
-      
       <tag>安全工具</tag>
+      
+      <tag>Windows</tag>
       
       <tag>编程</tag>
       
@@ -79,11 +100,11 @@
     
     <tags>
       
-      <tag>网络安全</tag>
-      
       <tag>安全工具</tag>
       
       <tag>渗透测试</tag>
+      
+      <tag>网络安全</tag>
       
     </tags>
     
@@ -104,9 +125,9 @@
       
       <tag>网络安全</tag>
       
-      <tag>Github</tag>
-      
       <tag>编程</tag>
+      
+      <tag>Github</tag>
       
     </tags>
     
@@ -169,9 +190,9 @@
     
     <tags>
       
-      <tag>网络安全</tag>
-      
       <tag>安全工具</tag>
+      
+      <tag>网络安全</tag>
       
     </tags>
     
