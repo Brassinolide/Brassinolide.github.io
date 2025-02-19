@@ -8,15 +8,15 @@
     <link href="/articles/rtcleak/"/>
     <url>/articles/rtcleak/</url>
     
-    <content type="html"><![CDATA[<h1 id="WebRTC泄露"><a href="#WebRTC泄露" class="headerlink" title="WebRTC泄露"></a>WebRTC泄露</h1><p>WebRTC（Web Real-Time Communication）允许开发者直接在浏览器中实现点对点（P2P）的音视频通信、数据传输等功能</p><p>一般浏览器默认启用WebRTC（但是一些匿名浏览器如tor浏览器默认禁用），且使用WebRTC不需要经过用户同意，可利用性还是很高的</p><p>如图，我挂了一个香港的代理，并且用WebRTC泄露成功获取了我的真实IP</p><p><img src="/articles/rtcleak/1.png"></p><p><button id="testLeak">点击测试WebRTC泄露</button></p><script>document.getElementById('testLeak').onclick = function() {    function rtcLeak(stun = "stun:stun.l.google.com:19302") {    return new Promise((resolve, reject) => {        const myPeerConnection = window.RTCPeerConnection || window.mozRTCPeerConnection || window.webkitRTCPeerConnection || window.msRTCPeerConnection;        const pc = new myPeerConnection({ iceServers: [{ urls: stun }] });        pc.createDataChannel("");        pc.onicecandidate = (event) => {            if (event && event.candidate && event.candidate.candidate) {                const ipRegex = /([0-9]{1,3}(\.[0-9]{1,3}){3}|[a-f0-9]{1,4}(:[a-f0-9]{1,4}){7})/;                const ipMatch = event.candidate.candidate.match(ipRegex);                if (ipMatch) {                    pc.close();                    resolve(ipMatch[1]);                }            }        };        pc.createOffer()            .then((offer) => pc.setLocalDescription(offer))            .catch((error) => {                reject(error);            });    });}rtcLeak()    .then((ip) => {        alert(ip);    })    .catch((error) => {        alert(error);    });}</script><figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br></pre></td><td class="code"><pre><code class="hljs js"><span class="hljs-keyword">function</span> <span class="hljs-title function_">rtcLeak</span>(<span class="hljs-params">stun = <span class="hljs-string">&quot;stun:stun.l.google.com:19302&quot;</span></span>) &#123;<br>    <span class="hljs-keyword">return</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">Promise</span>(<span class="hljs-function">(<span class="hljs-params">resolve, reject</span>) =&gt;</span> &#123;<br>        <span class="hljs-keyword">const</span> myPeerConnection = <span class="hljs-variable language_">window</span>.<span class="hljs-property">RTCPeerConnection</span> || <span class="hljs-variable language_">window</span>.<span class="hljs-property">mozRTCPeerConnection</span> || <span class="hljs-variable language_">window</span>.<span class="hljs-property">webkitRTCPeerConnection</span> || <span class="hljs-variable language_">window</span>.<span class="hljs-property">msRTCPeerConnection</span>;<br>        <span class="hljs-keyword">const</span> pc = <span class="hljs-keyword">new</span> <span class="hljs-title function_">myPeerConnection</span>(&#123; <span class="hljs-attr">iceServers</span>: [&#123; <span class="hljs-attr">urls</span>: stun &#125;] &#125;);<br>        pc.<span class="hljs-title function_">createDataChannel</span>(<span class="hljs-string">&quot;&quot;</span>);<br>        <span class="hljs-comment">//当WebRTC试图建立连接时，它会生成一系列的ICE候选者</span><br>        <span class="hljs-comment">//通过正则表达式匹配这些ICE候选者是否包含IP地址</span><br>        pc.<span class="hljs-property">onicecandidate</span> = <span class="hljs-function">(<span class="hljs-params">event</span>) =&gt;</span> &#123;<br>            <span class="hljs-keyword">if</span> (event &amp;&amp; event.<span class="hljs-property">candidate</span> &amp;&amp; event.<span class="hljs-property">candidate</span>.<span class="hljs-property">candidate</span>) &#123;<br>                <span class="hljs-keyword">const</span> ipRegex = <span class="hljs-regexp">/([0-9]&#123;1,3&#125;(\.[0-9]&#123;1,3&#125;)&#123;3&#125;|[a-f0-9]&#123;1,4&#125;(:[a-f0-9]&#123;1,4&#125;)&#123;7&#125;)/</span>;<br>                <span class="hljs-keyword">const</span> ipMatch = event.<span class="hljs-property">candidate</span>.<span class="hljs-property">candidate</span>.<span class="hljs-title function_">match</span>(ipRegex);<br><br>                <span class="hljs-keyword">if</span> (ipMatch) &#123;<br>                    pc.<span class="hljs-title function_">close</span>();<br>                    <span class="hljs-title function_">resolve</span>(ipMatch[<span class="hljs-number">1</span>]);<br>                &#125;<br>            &#125;<br>        &#125;;<br>        pc.<span class="hljs-title function_">createOffer</span>()<br>            .<span class="hljs-title function_">then</span>(<span class="hljs-function">(<span class="hljs-params">offer</span>) =&gt;</span> pc.<span class="hljs-title function_">setLocalDescription</span>(offer))<br>            .<span class="hljs-title function_">catch</span>(<span class="hljs-function">(<span class="hljs-params">error</span>) =&gt;</span> &#123;<br>                <span class="hljs-title function_">reject</span>(error);<br>            &#125;);<br>    &#125;);<br>&#125;<br><br><span class="hljs-title function_">rtcLeak</span>()<br>    .<span class="hljs-title function_">then</span>(<span class="hljs-function">(<span class="hljs-params">ip</span>) =&gt;</span> &#123;<br>        <span class="hljs-title function_">alert</span>(ip);<br>    &#125;)<br>    .<span class="hljs-title function_">catch</span>(<span class="hljs-function">(<span class="hljs-params">error</span>) =&gt;</span> &#123;<br>        <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">error</span>(error);<br>    &#125;);<br></code></pre></td></tr></table></figure><h1 id="禁用WebRTC"><a href="#禁用WebRTC" class="headerlink" title="禁用WebRTC"></a>禁用WebRTC</h1><p>禁用WebRTC不仅能防止IP泄露，还能阻止流氓网站偷偷跑PCDN（是的，国内某些大厂的行为，网页都能用来跑PCDN，真是四马了）</p><p>对于非Chrome浏览器，这里有详细步骤：<a href="https://nordvpn.com/zh/blog/jinyong-webrtc/">https://nordvpn.com/zh/blog/jinyong-webrtc/</a></p><p>Chrome浏览器没法直接禁用，必须用插件或油猴脚本实现</p><p>比如以下油猴脚本</p><p><img src="/articles/rtcleak/2.png"></p><figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><code class="hljs js"><span class="hljs-comment">// ==UserScript==</span><br><span class="hljs-comment">// @name 禁用WebRTC</span><br><span class="hljs-comment">// @match *://*/*</span><br><span class="hljs-comment">// @version 1</span><br><span class="hljs-comment">// @description 禁用WebRTC</span><br><span class="hljs-comment">// @run-at document-start</span><br><span class="hljs-comment">// @website https://crackme.net/articles/rtcleak</span><br><span class="hljs-comment">// ==/UserScript==</span><br><br>[<br>    <span class="hljs-string">&#x27;RTCPeerConnection&#x27;</span>, <span class="hljs-string">&#x27;RTCSessionDescription&#x27;</span>, <span class="hljs-string">&#x27;RTCIceCandidate&#x27;</span>,<br>    <span class="hljs-string">&#x27;webkitRTCPeerConnection&#x27;</span>, <span class="hljs-string">&#x27;webkitRTCSessionDescription&#x27;</span>, <span class="hljs-string">&#x27;webkitRTCIceCandidate&#x27;</span>,<br>    <span class="hljs-string">&#x27;mozRTCPeerConnection&#x27;</span>, <span class="hljs-string">&#x27;mozRTCSessionDescription&#x27;</span>, <span class="hljs-string">&#x27;mozRTCIceCandidate&#x27;</span>,<br>    <span class="hljs-string">&#x27;msRTCPeerConnection&#x27;</span>, <span class="hljs-string">&#x27;msRTCSessionDescription&#x27;</span>, <span class="hljs-string">&#x27;msRTCIceCandidate&#x27;</span><br>].<span class="hljs-title function_">forEach</span>(<span class="hljs-function"><span class="hljs-params">obj</span> =&gt;</span> &#123;<br>    <span class="hljs-keyword">if</span> (unsafeWindow[obj]) <span class="hljs-keyword">delete</span> unsafeWindow[obj];<br>&#125;);<br></code></pre></td></tr></table></figure>]]></content>
+    <content type="html"><![CDATA[<h1 id="WebRTC泄露"><a href="#WebRTC泄露" class="headerlink" title="WebRTC泄露"></a>WebRTC泄露</h1><p>WebRTC（Web Real-Time Communication）允许开发者直接在浏览器中实现点对点（P2P）的音视频通信、数据传输等功能</p><p>一般浏览器默认启用WebRTC（但是一些匿名浏览器如tor浏览器默认禁用），且使用WebRTC不需要经过用户同意，可利用性还是很高的</p><p>如图，我挂了一个香港的代理，并且用WebRTC泄露成功获取了我的真实IP</p><p><img src="/articles/rtcleak/1.png"></p><p><button id="testLeak">点击测试WebRTC泄露</button></p><script>document.getElementById('testLeak').onclick = function() {    function rtcLeak(stun = "stun:stun.l.google.com:19302") {    return new Promise((resolve, reject) => {        const myPeerConnection = window.RTCPeerConnection || window.mozRTCPeerConnection || window.webkitRTCPeerConnection || window.msRTCPeerConnection;        const pc = new myPeerConnection({ iceServers: [{ urls: stun }] });        pc.createDataChannel("");        pc.onicecandidate = (event) => {            if (event && event.candidate && event.candidate.candidate) {                const ipRegex = /([0-9]{1,3}(\.[0-9]{1,3}){3}|[a-f0-9]{1,4}(:[a-f0-9]{1,4}){7})/;                const ipMatch = event.candidate.candidate.match(ipRegex);                if (ipMatch) {                    pc.close();                    resolve(ipMatch[1]);                }            }        };        pc.createOffer()            .then((offer) => pc.setLocalDescription(offer))            .catch((error) => {                reject(error);            });    });}rtcLeak()    .then((ip) => {        alert(ip);    })    .catch((error) => {        alert(error);    });}</script><figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br></pre></td><td class="code"><pre><code class="hljs js"><span class="hljs-keyword">function</span> <span class="hljs-title function_">rtcLeak</span>(<span class="hljs-params">stun = <span class="hljs-string">&quot;stun:stun.l.google.com:19302&quot;</span></span>) &#123;<br>    <span class="hljs-keyword">return</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">Promise</span>(<span class="hljs-function">(<span class="hljs-params">resolve, reject</span>) =&gt;</span> &#123;<br>        <span class="hljs-keyword">const</span> myPeerConnection = <span class="hljs-variable language_">window</span>.<span class="hljs-property">RTCPeerConnection</span> || <span class="hljs-variable language_">window</span>.<span class="hljs-property">mozRTCPeerConnection</span> || <span class="hljs-variable language_">window</span>.<span class="hljs-property">webkitRTCPeerConnection</span> || <span class="hljs-variable language_">window</span>.<span class="hljs-property">msRTCPeerConnection</span>;<br>        <span class="hljs-keyword">const</span> pc = <span class="hljs-keyword">new</span> <span class="hljs-title function_">myPeerConnection</span>(&#123; <span class="hljs-attr">iceServers</span>: [&#123; <span class="hljs-attr">urls</span>: stun &#125;] &#125;);<br>        pc.<span class="hljs-title function_">createDataChannel</span>(<span class="hljs-string">&quot;&quot;</span>);<br>        <span class="hljs-comment">//当WebRTC试图建立连接时，它会生成一系列的ICE候选者</span><br>        <span class="hljs-comment">//通过正则表达式匹配这些ICE候选者是否包含IP地址</span><br>        pc.<span class="hljs-property">onicecandidate</span> = <span class="hljs-function">(<span class="hljs-params">event</span>) =&gt;</span> &#123;<br>            <span class="hljs-keyword">if</span> (event &amp;&amp; event.<span class="hljs-property">candidate</span> &amp;&amp; event.<span class="hljs-property">candidate</span>.<span class="hljs-property">candidate</span>) &#123;<br>                <span class="hljs-keyword">const</span> ipRegex = <span class="hljs-regexp">/([0-9]&#123;1,3&#125;(\.[0-9]&#123;1,3&#125;)&#123;3&#125;|[a-f0-9]&#123;1,4&#125;(:[a-f0-9]&#123;1,4&#125;)&#123;7&#125;)/</span>;<br>                <span class="hljs-keyword">const</span> ipMatch = event.<span class="hljs-property">candidate</span>.<span class="hljs-property">candidate</span>.<span class="hljs-title function_">match</span>(ipRegex);<br><br>                <span class="hljs-keyword">if</span> (ipMatch) &#123;<br>                    pc.<span class="hljs-title function_">close</span>();<br>                    <span class="hljs-title function_">resolve</span>(ipMatch[<span class="hljs-number">1</span>]);<br>                &#125;<br>            &#125;<br>        &#125;;<br>        pc.<span class="hljs-title function_">createOffer</span>()<br>            .<span class="hljs-title function_">then</span>(<span class="hljs-function">(<span class="hljs-params">offer</span>) =&gt;</span> pc.<span class="hljs-title function_">setLocalDescription</span>(offer))<br>            .<span class="hljs-title function_">catch</span>(<span class="hljs-function">(<span class="hljs-params">error</span>) =&gt;</span> &#123;<br>                <span class="hljs-title function_">reject</span>(error);<br>            &#125;);<br>    &#125;);<br>&#125;<br><br><span class="hljs-title function_">rtcLeak</span>()<br>    .<span class="hljs-title function_">then</span>(<span class="hljs-function">(<span class="hljs-params">ip</span>) =&gt;</span> &#123;<br>        <span class="hljs-title function_">alert</span>(ip);<br>    &#125;)<br>    .<span class="hljs-title function_">catch</span>(<span class="hljs-function">(<span class="hljs-params">error</span>) =&gt;</span> &#123;<br>        <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">error</span>(error);<br>    &#125;);<br></code></pre></td></tr></table></figure><h1 id="禁用WebRTC"><a href="#禁用WebRTC" class="headerlink" title="禁用WebRTC"></a>禁用WebRTC</h1><p>禁用WebRTC不仅能防止IP泄露，还能阻止流氓网站偷偷跑PCDN（是的，国内某些大厂的行为，网页都能用来跑PCDN，真是四马了）</p><p>对于非Chrome浏览器，这里有详细步骤：<a href="https://nordvpn.com/zh/blog/jinyong-webrtc/">https://nordvpn.com/zh/blog/jinyong-webrtc/</a></p><p>Chrome浏览器没法直接禁用，必须用插件或油猴脚本实现</p><p>比如谷歌官方的插件：<a href="https://chromewebstore.google.com/detail/webrtc-network-limiter/npeicpdbkakmehahjeeohfdhnlpdklia">https://chromewebstore.google.com/detail/webrtc-network-limiter/npeicpdbkakmehahjeeohfdhnlpdklia</a></p><p>或者油猴脚本：</p><p><img src="/articles/rtcleak/2.png"></p><figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br></pre></td><td class="code"><pre><code class="hljs js"><span class="hljs-comment">// ==UserScript==</span><br><span class="hljs-comment">// @name 禁用WebRTC</span><br><span class="hljs-comment">// @match *://*/*</span><br><span class="hljs-comment">// @version 1</span><br><span class="hljs-comment">// @description 禁用WebRTC</span><br><span class="hljs-comment">// @run-at document-start</span><br><span class="hljs-comment">// @website https://crackme.net/articles/rtcleak</span><br><span class="hljs-comment">// ==/UserScript==</span><br><br>[<span class="hljs-string">&quot;&quot;</span>,<span class="hljs-string">&quot;webkit&quot;</span>,<span class="hljs-string">&quot;moz&quot;</span>,<span class="hljs-string">&quot;ms&quot;</span>].<span class="hljs-title function_">forEach</span>(<span class="hljs-function"><span class="hljs-params">prefix</span> =&gt;</span> &#123;<br>    [<br>        <span class="hljs-string">&quot;RTCError&quot;</span>,<br>        <span class="hljs-string">&quot;RTCRtpSender&quot;</span>,<br>        <span class="hljs-string">&quot;RTCDTMFSender&quot;</span>,<br>        <span class="hljs-string">&quot;RTCErrorEvent&quot;</span>,<br>        <span class="hljs-string">&quot;RTCTrackEvent&quot;</span>,<br>        <span class="hljs-string">&quot;RTCCertificate&quot;</span>,<br>        <span class="hljs-string">&quot;RTCDataChannel&quot;</span>,<br>        <span class="hljs-string">&quot;RTCRtpReceiver&quot;</span>,<br>        <span class="hljs-string">&quot;RTCStatsReport&quot;</span>,<br>        <span class="hljs-string">&quot;RTCIceCandidate&quot;</span>,<br>        <span class="hljs-string">&quot;RTCIceTransport&quot;</span>,<br>        <span class="hljs-string">&quot;RTCDtlsTransport&quot;</span>,<br>        <span class="hljs-string">&quot;RTCSctpTransport&quot;</span>,<br>        <span class="hljs-string">&quot;RTCPeerConnection&quot;</span>,<br>        <span class="hljs-string">&quot;RTCRtpTransceiver&quot;</span>,<br>        <span class="hljs-string">&quot;RTCDataChannelEvent&quot;</span>,<br>        <span class="hljs-string">&quot;RTCEncodedAudioFrame&quot;</span>,<br>        <span class="hljs-string">&quot;RTCEncodedVideoFrame&quot;</span>,<br>        <span class="hljs-string">&quot;RTCSessionDescription&quot;</span>,<br>        <span class="hljs-string">&quot;RTCDTMFToneChangeEvent&quot;</span>,<br>        <span class="hljs-string">&quot;RTCPeerConnectionIceEvent&quot;</span>,<br>        <span class="hljs-string">&quot;RTCPeerConnectionIceErrorEvent&quot;</span><br>    ].<span class="hljs-title function_">forEach</span>(<span class="hljs-function"><span class="hljs-params">rtc</span> =&gt;</span> &#123;<br>        <span class="hljs-keyword">const</span> obj = prefix + rtc;<br>        <span class="hljs-keyword">if</span> (unsafeWindow[obj]) <span class="hljs-keyword">delete</span> unsafeWindow[obj];<br>    &#125;);<br>&#125;);<br></code></pre></td></tr></table></figure>]]></content>
     
     
     
     <tags>
       
-      <tag>网络安全</tag>
-      
       <tag>编程</tag>
+      
+      <tag>网络安全</tag>
       
     </tags>
     
@@ -41,9 +41,9 @@
     
     <tags>
       
-      <tag>网络安全</tag>
-      
       <tag>编程</tag>
+      
+      <tag>网络安全</tag>
       
       <tag>网络工程</tag>
       
@@ -66,9 +66,9 @@
       
       <tag>网络安全</tag>
       
-      <tag>网络工程</tag>
-      
       <tag>云服务器</tag>
+      
+      <tag>网络工程</tag>
       
       <tag>运维</tag>
       
@@ -137,9 +137,9 @@
     
     <tags>
       
-      <tag>网络安全</tag>
-      
       <tag>编程</tag>
+      
+      <tag>网络安全</tag>
       
     </tags>
     
@@ -158,9 +158,9 @@
     
     <tags>
       
-      <tag>网络安全</tag>
-      
       <tag>编程</tag>
+      
+      <tag>网络安全</tag>
       
       <tag>密码学</tag>
       
@@ -183,9 +183,9 @@
     
     <tags>
       
-      <tag>网络安全</tag>
-      
       <tag>编程</tag>
+      
+      <tag>网络安全</tag>
       
       <tag>密码学</tag>
       
@@ -206,9 +206,9 @@
     
     <tags>
       
-      <tag>网络安全</tag>
-      
       <tag>编程</tag>
+      
+      <tag>网络安全</tag>
       
     </tags>
     
@@ -227,9 +227,9 @@
     
     <tags>
       
-      <tag>网络安全</tag>
-      
       <tag>编程</tag>
+      
+      <tag>网络安全</tag>
       
     </tags>
     
@@ -248,9 +248,9 @@
     
     <tags>
       
-      <tag>网络安全</tag>
-      
       <tag>编程</tag>
+      
+      <tag>网络安全</tag>
       
       <tag>密码学</tag>
       
@@ -290,9 +290,9 @@
     
     <tags>
       
-      <tag>网络安全</tag>
-      
       <tag>编程</tag>
+      
+      <tag>网络安全</tag>
       
       <tag>windows</tag>
       
@@ -313,9 +313,9 @@
     
     <tags>
       
-      <tag>网络安全</tag>
-      
       <tag>编程</tag>
+      
+      <tag>网络安全</tag>
       
     </tags>
     
@@ -422,9 +422,9 @@
     
     <tags>
       
-      <tag>网络安全</tag>
-      
       <tag>编程</tag>
+      
+      <tag>网络安全</tag>
       
       <tag>Github</tag>
       
@@ -445,9 +445,9 @@
     
     <tags>
       
-      <tag>网络安全</tag>
-      
       <tag>编程</tag>
+      
+      <tag>网络安全</tag>
       
     </tags>
     
@@ -466,9 +466,9 @@
     
     <tags>
       
-      <tag>网络安全</tag>
-      
       <tag>编程</tag>
+      
+      <tag>网络安全</tag>
       
       <tag>Windows</tag>
       
@@ -550,9 +550,9 @@
     
     <tags>
       
-      <tag>网络安全</tag>
-      
       <tag>编程</tag>
+      
+      <tag>网络安全</tag>
       
       <tag>Windows</tag>
       
@@ -573,9 +573,9 @@
     
     <tags>
       
-      <tag>网络安全</tag>
-      
       <tag>编程</tag>
+      
+      <tag>网络安全</tag>
       
       <tag>Windows</tag>
       
