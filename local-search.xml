@@ -4,6 +4,35 @@
   
   
   <entry>
+    <title>Let&#39;s RFC3161</title>
+    <link href="/articles/rfc3161docs/"/>
+    <url>/articles/rfc3161docs/</url>
+    
+    <content type="html"><![CDATA[<p>跳转到：<a href="https://rfc3161.top/">https://rfc3161.top/</a></p><script>(function() {    window.location.href = "https://rfc3161.top/";})();</script>]]></content>
+    
+    
+    <categories>
+      
+      <category>文档</category>
+      
+    </categories>
+    
+    
+    <tags>
+      
+      <tag>网络安全</tag>
+      
+      <tag>编程</tag>
+      
+      <tag>RFC3161</tag>
+      
+    </tags>
+    
+  </entry>
+  
+  
+  
+  <entry>
     <title>3环无驱动非漏洞结束任何杀毒软件</title>
     <link href="/articles/ring3killav/"/>
     <url>/articles/ring3killav/</url>
@@ -378,9 +407,9 @@
       
       <tag>编程</tag>
       
-      <tag>Windows</tag>
-      
       <tag>安全工具</tag>
+      
+      <tag>Windows</tag>
       
     </tags>
     
