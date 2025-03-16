@@ -4,6 +4,25 @@
   
   
   <entry>
+    <title>【奇技淫巧】利用BurpSuite的证书bug阻止BurpSuite访问你的网站</title>
+    <link href="/articles/noburpsuite/"/>
+    <url>/articles/noburpsuite/</url>
+    
+    <content type="html"><![CDATA[<p>首先需要一个泛域名证书，这里用let’s encrypt的免费泛域名证书</p><p><img src="/articles/noburpsuite/1.png"></p><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs shell">certbot certonly --manual --preferred-challenges dns -d *.rfc3161.top -d rfc3161.top<br></code></pre></td></tr></table></figure><p>然后创建一个带下划线的DNS记录，解析到你的服务器上</p><p><img src="/articles/noburpsuite/2.png"></p><p>服务器配置强制HTTPS访问</p><p><img src="/articles/noburpsuite/3.png"></p><p>正常用户可以访问网站</p><p><img src="/articles/noburpsuite/4.png"></p><p>而BurpSuite用户访问时会出现ERR_SSL_PROTOCOL_ERROR错误</p><p><img src="/articles/noburpsuite/5.png"></p><p>因为域名中包含下划线是不符合标准的，所以BurpSuite在颁发中间人证书时出现了bug，BurpSuite官方也表态不会进行修复（笑）</p><p><img src="/articles/noburpsuite/6.png"></p><p>要修复这个问题也很简单，BurpSuite颁发的中间人证书是单域名，也改成泛域名就能修复了，但是BurpSuite官方他就是不修啊！（汗）</p><p><img src="/articles/noburpsuite/7.png"></p><p>不过yakit就没有这个问题，能正常颁发带有下划线的中间人证书</p><p><img src="/articles/noburpsuite/8.png"></p><p>来测试一下你的BurpSuite吧🥵：<a href="https://_noburpsuite.rfc3161.top/">https:&#x2F;&#x2F;_noburpsuite.rfc3161.top&#x2F;</a></p>]]></content>
+    
+    
+    
+    <tags>
+      
+      <tag>网络安全</tag>
+      
+    </tags>
+    
+  </entry>
+  
+  
+  
+  <entry>
     <title>Let&#39;s RFC3161</title>
     <link href="/articles/rfc3161docs/"/>
     <url>/articles/rfc3161docs/</url>
