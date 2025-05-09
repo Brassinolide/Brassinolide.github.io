@@ -1,0 +1,848 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/035b682805d10e4c77772bc6e936d08605d23c86.png">
+  <link rel="icon" href="/img/035b682805d10e4c77772bc6e936d08605d23c86.png">
+  
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+    <meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="Brassinolide">
+  <meta name="keywords" content="博客,计算机,编程,逆向工程,web安全,网络安全,技术文章,安全研究,ctf,python,c/c++">
+  
+    <meta name="description" content="【编程】使用wintrust API获取程序签名信息 &amp;&amp; 检查签名是否有效">
+<meta property="og:type" content="article">
+<meta property="og:title" content="【编程】使用wintrust API获取程序签名信息 &amp;&amp; 检查签名是否有效">
+<meta property="og:url" content="https://crackme.net/articles/wintrust_example/index.html">
+<meta property="og:site_name" content="CrackMe.net">
+<meta property="og:description" content="【编程】使用wintrust API获取程序签名信息 &amp;&amp; 检查签名是否有效">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://crackme.net/articles/wintrust_example/1.png">
+<meta property="article:published_time" content="2024-09-28T12:41:52.000Z">
+<meta property="article:modified_time" content="2024-10-01T06:17:12.135Z">
+<meta property="article:author" content="Brassinolide">
+<meta property="article:tag" content="编程">
+<meta property="article:tag" content="网络安全">
+<meta property="article:tag" content="Windows">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://crackme.net/articles/wintrust_example/1.png">
+  
+  
+    <meta name="referrer" content="no-referrer-when-downgrade">
+  
+  
+  <title>【编程】使用wintrust API获取程序签名信息 &amp;&amp; 检查签名是否有效 | CrackMe.net</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/KaTeX/0.16.2/katex.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1749284_5i9bdhy70f8.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1736178_k526ubmyhba.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+  
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_4819174_gp0ncad5v26.css">
+<link rel="stylesheet" href="/css/hexo-math-style.css">
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"crackme.net","root":"/","version":"1.9.8","typing":{"enable":false,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":true,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":false,"follow_dnt":true,"baidu":null,"google":{"measurement_id":null},"tencent":{"sid":null,"cid":null},"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false},"umami":{"src":null,"website_id":null,"domains":null,"start_time":"2024-01-01T00:00:00.000Z","token":null,"api_server":null}},"search_path":"/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+
+  
+<!-- hexo injector head_end start -->
+<link rel="stylesheet" href="/./css/hexo-math-style.css">
+<!-- hexo injector head_end end --><meta name="generator" content="Hexo 7.3.0"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 40vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>CrackMe.net</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/" target="_self">
+                <i class="iconfont icon-home-fill"></i>
+                <span>首页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/weixin/" target="_self">
+                <i class="iconfont icon-wechat-fill"></i>
+                <span>公众号</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/" target="_self">
+                <i class="iconfont icon-archive-fill"></i>
+                <span>归档</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/" target="_self">
+                <i class="iconfont icon-category-fill"></i>
+                <span>分类</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/" target="_self">
+                <i class="iconfont icon-tags-fill"></i>
+                <span>标签</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/" target="_self">
+                <i class="iconfont icon-user-fill"></i>
+                <span>关于</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/links/" target="_self">
+                <i class="iconfont icon-link-fill"></i>
+                <span>友链</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tools/" target="_self">
+                <i class="iconfont icon-briefcase"></i>
+                <span>在线工具</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="https://www.travellings.cn/go.html" target="_self">
+                <i class="iconfont icon-subway"></i>
+                <span>开往</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" false
+     style="background: url('/img/default.jpg') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle">【编程】使用wintrust API获取程序签名信息 && 检查签名是否有效</span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2024-09-28 20:41" pubdate>
+          2024年9月28日 晚上
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          1.1k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          9 分钟
+        
+      </span>
+    
+
+    
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header">【编程】使用wintrust API获取程序签名信息 &amp;&amp; 检查签名是否有效</h1>
+            
+              <p id="updated-time" class="note note-info" style="display: none">
+                
+                  
+                    本文最后更新于 2024-10-01T14:17:12+08:00
+                  
+                  
+
+                
+              </p>
+            
+            
+              <div class="markdown-body">
+                
+                <p>在编写安全工具的过程中，有时要验证程序的数字签名，微软提供了一套API可供调用<a target="_blank" rel="noopener" href="https://learn.microsoft.com/zh-cn/windows/win32/api/wintrust/">wintrust.h标头</a></p>
+<h1 id="WinVerifyTrust"><a href="#WinVerifyTrust" class="headerlink" title="WinVerifyTrust"></a>WinVerifyTrust</h1><p><a target="_blank" rel="noopener" href="https://learn.microsoft.com/zh-cn/windows/win32/api/wintrust/nf-wintrust-winverifytrust">https://learn.microsoft.com/zh-cn/windows/win32/api/wintrust/nf-wintrust-winverifytrust</a></p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs C++"><span class="hljs-function">LONG <span class="hljs-title">WinVerifyTrust</span><span class="hljs-params">(</span></span><br><span class="hljs-params"><span class="hljs-function">  [in] HWND   hwnd,</span></span><br><span class="hljs-params"><span class="hljs-function">  [in] GUID   *pgActionID,</span></span><br><span class="hljs-params"><span class="hljs-function">  [in] LPVOID pWVTData</span></span><br><span class="hljs-params"><span class="hljs-function">)</span></span>;<br></code></pre></td></tr></table></figure>
+
+<p><code>hwnd</code>：调用方窗口的句柄，一般为<code>NULL</code></p>
+<p><code>pgActionID</code>：指向GUID结构的指针，该结构指定信任提供程序。验证程序数字签名则传入<code>WINTRUST_ACTION_GENERIC_VERIFY_V2</code></p>
+<p><code>pWVTData</code>：指向<code>WINTRUST_DATA</code>结构的指针，结构包括处理所需的信息</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br></pre></td><td class="code"><pre><code class="hljs C++"><span class="hljs-keyword">typedef</span> <span class="hljs-keyword">struct</span> <span class="hljs-title class_">_WINTRUST_DATA</span> &#123;<br>  DWORD                               cbStruct;<br>  LPVOID                              pPolicyCallbackData;<br>  LPVOID                              pSIPClientData;<br>  DWORD                               dwUIChoice;<br>  DWORD                               fdwRevocationChecks;<br>  DWORD                               dwUnionChoice;<br>  <span class="hljs-keyword">union</span> &#123;<br><span class="hljs-meta">#<span class="hljs-keyword">if</span> ...</span><br>    WINTRUST_FILE_INFO_                *pFile;<br><span class="hljs-meta">#<span class="hljs-keyword">else</span></span><br>    <span class="hljs-keyword">struct</span> <span class="hljs-title class_">WINTRUST_FILE_INFO_</span>         *pFile;<br><span class="hljs-meta">#<span class="hljs-keyword">endif</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">if</span> ...</span><br>    WINTRUST_CATALOG_INFO_             *pCatalog;<br><span class="hljs-meta">#<span class="hljs-keyword">else</span></span><br>    <span class="hljs-keyword">struct</span> <span class="hljs-title class_">WINTRUST_CATALOG_INFO_</span>      *pCatalog;<br><span class="hljs-meta">#<span class="hljs-keyword">endif</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">if</span> ...</span><br>    WINTRUST_BLOB_INFO_                *pBlob;<br><span class="hljs-meta">#<span class="hljs-keyword">else</span></span><br>    <span class="hljs-keyword">struct</span> <span class="hljs-title class_">WINTRUST_BLOB_INFO_</span>         *pBlob;<br><span class="hljs-meta">#<span class="hljs-keyword">endif</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">if</span> ...</span><br>    WINTRUST_SGNR_INFO_                *pSgnr;<br><span class="hljs-meta">#<span class="hljs-keyword">else</span></span><br>    <span class="hljs-keyword">struct</span> <span class="hljs-title class_">WINTRUST_SGNR_INFO_</span>         *pSgnr;<br><span class="hljs-meta">#<span class="hljs-keyword">endif</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">if</span> ...</span><br>    WINTRUST_CERT_INFO_                *pCert;<br><span class="hljs-meta">#<span class="hljs-keyword">else</span></span><br>    <span class="hljs-keyword">struct</span> <span class="hljs-title class_">WINTRUST_CERT_INFO_</span>         *pCert;<br><span class="hljs-meta">#<span class="hljs-keyword">endif</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">if</span> ...</span><br>    WINTRUST_DETACHED_SIG_INFO_        *pDetachedSig;<br><span class="hljs-meta">#<span class="hljs-keyword">else</span></span><br>    <span class="hljs-keyword">struct</span> <span class="hljs-title class_">WINTRUST_DETACHED_SIG_INFO_</span> *pDetachedSig;<br><span class="hljs-meta">#<span class="hljs-keyword">endif</span></span><br>  &#125;;<br>  DWORD                               dwStateAction;<br>  HANDLE                              hWVTStateData;<br>  WCHAR                               *pwszURLReference;<br>  DWORD                               dwProvFlags;<br>  DWORD                               dwUIContext;<br>  <span class="hljs-keyword">struct</span> <span class="hljs-title class_">WINTRUST_SIGNATURE_SETTINGS_</span> *pSignatureSettings;<br>&#125; WINTRUST_DATA, *PWINTRUST_DATA;<br></code></pre></td></tr></table></figure>
+
+<p><code>cbStruct</code>：结构大小，即<code>sizeof(WINTRUST_DATA)</code></p>
+<p><code>dwUIChoice</code>：指定要使用的UI的类型，一般为<code>WTD_UI_NONE</code>(不显示UI)</p>
+<p><code>fdwRevocationChecks</code>：证书吊销检查选项，可以是以下两个值</p>
+<blockquote>
+<p><code>WTD_REVOKE_NONE</code>：不检查证书是否被吊销，哪怕证书已经被吊销，也会将其视为有效，可以提高验证的速度（安全换效率）<br><code>WTD_REVOKE_WHOLECHAIN</code>：检查整个证书链中的所有证书是否被吊销，任何一个证书被吊销，则整个证书链失效（效率换安全）</p>
+</blockquote>
+<p><code>dwUnionChoice</code>：指定要使用的联合成员。验证文件则设置为<code>WTD_CHOICE_FILE</code></p>
+<p><code>pFile</code>：指向<code>WINTRUST_FILE_INFO</code>结构的指针，包含要验证的文件信息</p>
+<p><code>dwStateAction</code>：指定要执行的操作。如果不需要<code>hWVTStateData</code>成员则设置为<code>WTD_STATEACTION_IGNORE</code>，否则设置为<code>WTD_STATEACTION_VERIFY</code>（<code>hWVTStateData</code>成员在下文用于获取签名者姓名，所以我这里设置为<code>WTD_STATEACTION_VERIFY</code>）（如果设置为<code>WTD_STATEACTION_VERIFY</code>，则需要使用<code>WTD_STATEACTION_CLOSE</code>关闭句柄以免造成资源泄露）</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><code class="hljs C++"><span class="hljs-keyword">typedef</span> <span class="hljs-keyword">struct</span> <span class="hljs-title class_">WINTRUST_FILE_INFO_</span> &#123;<br>  DWORD   cbStruct;<br>  LPCWSTR pcwszFilePath;<br>  HANDLE  hFile;<br>  GUID    *pgKnownSubject;<br>&#125; WINTRUST_FILE_INFO, *PWINTRUST_FILE_INFO;<br></code></pre></td></tr></table></figure>
+
+<p><code>cbStruct</code>：结构大小，即<code>sizeof(WINTRUST_FILE_INFO)</code></p>
+<p><code>pcwszFilePath</code>：要验证文件的完整路径</p>
+<h2 id="返回值"><a href="#返回值" class="headerlink" title="返回值"></a>返回值</h2><p>以下给出几个常用返回值，完整返回值列表可从 <a target="_blank" rel="noopener" href="https://learn.microsoft.com/zh-cn/windows/win32/seccrypto/certificate-and-trust-return-values">https://learn.microsoft.com/zh-cn/windows/win32/seccrypto/certificate-and-trust-return-values</a> 获取</p>
+<p><code>TRUST_E_NOSIGNATURE</code>：程序无签名</p>
+<p><code>ERROR_SUCCESS</code>：签名有效</p>
+<p><code>TRUST_E_BAD_DIGEST</code>：签名无效</p>
+<p><code>CERT_E_EXPIRED</code>：签名过期</p>
+<p><code>CERT_E_REVOKED</code>：签名被吊销</p>
+<p><code>TRUST_E_EXPLICIT_DISTRUST</code>：签名不被信任</p>
+<h1 id="CertGetNameStringW"><a href="#CertGetNameStringW" class="headerlink" title="CertGetNameStringW"></a>CertGetNameStringW</h1><p><a target="_blank" rel="noopener" href="https://learn.microsoft.com/zh-cn/windows/win32/api/wincrypt/nf-wincrypt-certgetnamestringw">https://learn.microsoft.com/zh-cn/windows/win32/api/wincrypt/nf-wincrypt-certgetnamestringw</a></p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><code class="hljs C++"><span class="hljs-function">DWORD <span class="hljs-title">CertGetNameStringW</span><span class="hljs-params">(</span></span><br><span class="hljs-params"><span class="hljs-function">  [in]  PCCERT_CONTEXT pCertContext,</span></span><br><span class="hljs-params"><span class="hljs-function">  [in]  DWORD          dwType,</span></span><br><span class="hljs-params"><span class="hljs-function">  [in]  DWORD          dwFlags,</span></span><br><span class="hljs-params"><span class="hljs-function">  [in]  <span class="hljs-type">void</span>           *pvTypePara,</span></span><br><span class="hljs-params"><span class="hljs-function">  [out] LPWSTR         pszNameString,</span></span><br><span class="hljs-params"><span class="hljs-function">  [in]  DWORD          cchNameString</span></span><br><span class="hljs-params"><span class="hljs-function">)</span></span>;<br></code></pre></td></tr></table></figure>
+
+<p><code>dwType</code>：这里只是获取程序的签名者姓名，传入<code>CERT_NAME_SIMPLE_DISPLAY_TYPE</code>即可</p>
+<p><code>pszNameString</code>：指针，指向用于接收返回值的缓冲区</p>
+<p><code>cchNameString</code>：缓冲区大小，防止返回数据时缓冲区溢出。传入<code>0</code>则获取预期大小</p>
+<p><code>pCertContext</code>：指向<code>CERT_CONTEXT</code>结构的指针，<code>CERT_CONTEXT</code>结构从<code>CRYPT_PROVIDER_SGNR</code>结构中获取</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs C++"><span class="hljs-function">CRYPT_PROVIDER_DATA * <span class="hljs-title">WTHelperProvDataFromStateData</span><span class="hljs-params">(</span></span><br><span class="hljs-params"><span class="hljs-function">  [in] HANDLE hStateData</span></span><br><span class="hljs-params"><span class="hljs-function">)</span></span>;<br></code></pre></td></tr></table></figure>
+
+<p><code>hStateData</code>：就是上文的<code>hWVTStateData</code>成员</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><code class="hljs C++"><span class="hljs-function">CRYPT_PROVIDER_SGNR * <span class="hljs-title">WTHelperGetProvSignerFromChain</span><span class="hljs-params">(</span></span><br><span class="hljs-params"><span class="hljs-function">  [in] CRYPT_PROVIDER_DATA *pProvData,</span></span><br><span class="hljs-params"><span class="hljs-function">  [in] DWORD               idxSigner,</span></span><br><span class="hljs-params"><span class="hljs-function">  [in] BOOL                fCounterSigner,</span></span><br><span class="hljs-params"><span class="hljs-function">  [in] DWORD               idxCounterSigner</span></span><br><span class="hljs-params"><span class="hljs-function">)</span></span>;<br></code></pre></td></tr></table></figure>
+
+<p><code>pProvData</code>：<code>WTHelperProvDataFromStateData</code>函数的返回值，其中包含签名者和反签名者信息</p>
+<p><code>idxSigner</code>：签名者索引，从<code>0</code>开始</p>
+<p><code>fCounterSigner</code>：这里传入<code>FALSE</code>，检索<code>idxSigner</code>指定的签名者</p>
+<p><code>idxCounterSigner</code>：反签名器的索引，从<code>0</code>开始</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><code class="hljs C++"><span class="hljs-keyword">typedef</span> <span class="hljs-keyword">struct</span> <span class="hljs-title class_">_CRYPT_PROVIDER_SGNR</span> &#123;<br>  DWORD                       cbStruct;<br>  FILETIME                    sftVerifyAsOf;<br>  DWORD                       csCertChain;<br>  <span class="hljs-keyword">struct</span> <span class="hljs-title class_">_CRYPT_PROVIDER_CERT</span> *pasCertChain;<br>  DWORD                       dwSignerType;<br>  CMSG_SIGNER_INFO            *psSigner;<br>  DWORD                       dwError;<br>  DWORD                       csCounterSigners;<br>  <span class="hljs-keyword">struct</span> <span class="hljs-title class_">_CRYPT_PROVIDER_SGNR</span> *pasCounterSigners;<br>  PCCERT_CHAIN_CONTEXT        pChainContext;<br>&#125; CRYPT_PROVIDER_SGNR, *PCRYPT_PROVIDER_SGNR;<br></code></pre></td></tr></table></figure>
+
+<p>唯一需要注意的是<code>pasCertChain</code>成员，可通过pasCertChain[0].pCert获取签名上下文（就是上文提到的<code>CERT_CONTEXT</code>）</p>
+<h1 id="示例代码"><a href="#示例代码" class="headerlink" title="示例代码"></a>示例代码</h1><p>以下为示例代码，获取签名者姓名的同时验证签名是否有效</p>
+<p><img src="/articles/wintrust_example/1.png" srcset="/img/loading.gif" lazyload></p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br></pre></td><td class="code"><pre><code class="hljs C++"><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;windows.h&gt;</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;wintrust.h&gt;</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;softpub.h&gt;</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;stdio.h&gt;</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">pragma</span> comment(lib, <span class="hljs-string">&quot;wintrust&quot;</span>)</span><br><span class="hljs-meta">#<span class="hljs-keyword">pragma</span> comment(lib, <span class="hljs-string">&quot;crypt32.lib&quot;</span>)</span><br><br><span class="hljs-function"><span class="hljs-type">int</span> <span class="hljs-title">main</span><span class="hljs-params">()</span> </span>&#123;<br>    <span class="hljs-comment">//设置WINTRUST_FILE_INFO结构</span><br>    WINTRUST_FILE_INFO fileData = &#123; <span class="hljs-number">0</span> &#125;;<br>    fileData.cbStruct = <span class="hljs-built_in">sizeof</span>(WINTRUST_FILE_INFO);<br>    fileData.pcwszFilePath = <span class="hljs-string">L&quot;C:\\Users\\ADMIN\\Desktop\\test.exe&quot;</span>;<br>    fileData.hFile = <span class="hljs-literal">NULL</span>;<br>    fileData.pgKnownSubject = <span class="hljs-literal">NULL</span>;<br><br>    <span class="hljs-comment">//设置WINTRUST_DATA结构</span><br>    GUID guidAction = WINTRUST_ACTION_GENERIC_VERIFY_V2;<br>    WINTRUST_DATA wintrustData = &#123; <span class="hljs-number">0</span> &#125;;<br>    wintrustData.cbStruct = <span class="hljs-built_in">sizeof</span>(WINTRUST_DATA);<br>    wintrustData.dwUIChoice = WTD_UI_NONE;<br>    wintrustData.fdwRevocationChecks = WTD_REVOKE_WHOLECHAIN;<br>    wintrustData.dwUnionChoice = WTD_CHOICE_FILE;<br>    wintrustData.pFile = &amp;fileData;<br>    wintrustData.dwStateAction = WTD_STATEACTION_VERIFY;<br><br>    <span class="hljs-comment">//调用WinVerifyTrust</span><br>    LONG result = <span class="hljs-built_in">WinVerifyTrust</span>(<span class="hljs-literal">NULL</span>, &amp;guidAction, &amp;wintrustData);<br><br>    <span class="hljs-comment">//获取CRYPT_PROVIDER_SGNR</span><br>    CRYPT_PROVIDER_DATA* providerData = <span class="hljs-built_in">WTHelperProvDataFromStateData</span>(wintrustData.hWVTStateData);<br>    <span class="hljs-keyword">if</span> (providerData == <span class="hljs-literal">NULL</span>) &#123;<br>        <span class="hljs-keyword">return</span> <span class="hljs-number">1</span>;<br>    &#125;<br><br>    CRYPT_PROVIDER_SGNR* signer = <span class="hljs-built_in">WTHelperGetProvSignerFromChain</span>(providerData, <span class="hljs-number">0</span>, FALSE, <span class="hljs-number">0</span>);<br>    <span class="hljs-keyword">if</span> (signer == <span class="hljs-literal">NULL</span>) &#123;<br>        <span class="hljs-keyword">return</span> <span class="hljs-number">1</span>;<br>    &#125;<br><br>    <span class="hljs-comment">//从CRYPT_PROVIDER_SGNR中获取CERT_CONTEXT</span><br>    PCCERT_CONTEXT certContext = signer-&gt;pasCertChain[<span class="hljs-number">0</span>].pCert;<br>    <br>    <span class="hljs-comment">//获取缓冲区预期大小</span><br>    DWORD nameSize = <span class="hljs-built_in">CertGetNameStringA</span>(certContext, CERT_NAME_SIMPLE_DISPLAY_TYPE, <span class="hljs-number">0</span>, <span class="hljs-literal">nullptr</span>, <span class="hljs-literal">nullptr</span>, <span class="hljs-number">0</span>);<br><br>    <span class="hljs-comment">//分配缓冲区，获取签名者姓名</span><br>    <span class="hljs-type">char</span>* nameBuffer = <span class="hljs-keyword">new</span> <span class="hljs-type">char</span>[nameSize];<br>    <span class="hljs-built_in">CertGetNameStringA</span>(certContext, CERT_NAME_SIMPLE_DISPLAY_TYPE, <span class="hljs-number">0</span>, <span class="hljs-literal">nullptr</span>, nameBuffer, nameSize);<br><br>    <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;签名者姓名：%s\n&quot;</span>,nameBuffer);<br><br>    <span class="hljs-comment">//关闭句柄，删除缓冲区</span><br>    wintrustData.dwStateAction = WTD_STATEACTION_CLOSE;<br>    <span class="hljs-built_in">WinVerifyTrust</span>(<span class="hljs-literal">nullptr</span>, &amp;guidAction, &amp;wintrustData);<br>    <span class="hljs-keyword">delete</span>[]nameBuffer;<br><br>    <span class="hljs-keyword">switch</span> (result)<br>    &#123;<br>    <span class="hljs-keyword">case</span> ERROR_SUCCESS:<br>        <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;签名有效&quot;</span>);<br>        <span class="hljs-keyword">break</span>;<br>    <span class="hljs-keyword">case</span> TRUST_E_NOSIGNATURE:<br>        <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;无签名&quot;</span>);<br>        <span class="hljs-keyword">break</span>;<br>    <span class="hljs-keyword">case</span> CERT_E_EXPIRED:<br>        <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;签名过期&quot;</span>);<br>        <span class="hljs-keyword">break</span>;<br>    <span class="hljs-keyword">case</span> CERT_E_REVOKED:<br>        <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;签名被吊销&quot;</span>);<br>        <span class="hljs-keyword">break</span>;<br>    <span class="hljs-keyword">case</span> TRUST_E_EXPLICIT_DISTRUST:<br>        <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;签名不被信任&quot;</span>);<br>        <span class="hljs-keyword">break</span>;<br>    <span class="hljs-keyword">case</span> TRUST_E_BAD_DIGEST:<br>        <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;签名无效&quot;</span>);<br>        <span class="hljs-keyword">break</span>;<br>    <span class="hljs-keyword">default</span>:<br>        <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;0x%x&quot;</span>, result);<br>        <span class="hljs-keyword">break</span>;<br>    &#125;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+  
+    <div class="post-meta">
+      <i class="iconfont icon-tags"></i>
+      
+        <a href="/tags/%E7%BC%96%E7%A8%8B/" class="print-no-link">#编程</a>
+      
+        <a href="/tags/%E7%BD%91%E7%BB%9C%E5%AE%89%E5%85%A8/" class="print-no-link">#网络安全</a>
+      
+        <a href="/tags/Windows/" class="print-no-link">#Windows</a>
+      
+    </div>
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>【编程】使用wintrust API获取程序签名信息 &amp;&amp; 检查签名是否有效</div>
+      <div>https://crackme.net/articles/wintrust_example/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>Brassinolide</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2024年9月28日</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by-nc-sa/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-cc-by"></i>
+                  </span>
+                </a>
+              
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by-nc-sa/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="NC - 非商业性使用">
+                    <i class="iconfont icon-cc-nc"></i>
+                  </span>
+                </a>
+              
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by-nc-sa/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="SA - 相同方式共享">
+                    <i class="iconfont icon-cc-sa"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/articles/appDomainManager_exploit/" title="AppDomainManager劫持实现dll侧加载（白加黑）">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">AppDomainManager劫持实现dll侧加载（白加黑）</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/articles/github_email_trace/" title="查找github commit记录中泄露的电子邮箱（溯源小技巧）">
+                        <span class="hidden-mobile">查找github commit记录中泄露的电子邮箱（溯源小技巧）</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+  
+  
+    <article id="comments" lazyload>
+      
+  <script type="text/javascript">
+    Fluid.utils.loadComments('#comments', function() {
+      var light = 'github-light';
+      var dark = 'github-dark';
+      var schema = document.documentElement.getAttribute('data-user-color-scheme');
+      if (schema === 'dark') {
+        schema = dark;
+      } else {
+        schema = light;
+      }
+      window.UtterancesThemeLight = light;
+      window.UtterancesThemeDark = dark;
+      var s = document.createElement('script');
+      s.setAttribute('src', 'https://utteranc.es/client.js');
+      s.setAttribute('repo', 'Brassinolide/Brassinolide.github.io');
+      s.setAttribute('issue-term', 'pathname');
+      
+      s.setAttribute('label', 'utterances');
+      
+      s.setAttribute('theme', schema);
+      s.setAttribute('crossorigin', 'anonymous');
+      document.getElementById('comments').appendChild(s);
+    })
+  </script>
+  <noscript>Please enable JavaScript to view the comments</noscript>
+
+
+    </article>
+  
+
+
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+  
+  
+
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       框架 <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> | 主题 <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> <div style="font-size: 0.85rem"> <span id="timeDate">载入天数...</span> <span id="times">载入时分秒...</span> <script src="/js/duration.js"></script> </div> 
+    </div>
+  
+  
+    <div class="statistics">
+  
+  
+
+  
+    
+      <span id="busuanzi_container_site_pv" style="display: none">
+        总访问量 
+        <span id="busuanzi_value_site_pv"></span>
+         次
+      </span>
+    
+    
+      <span id="busuanzi_container_site_uv" style="display: none">
+        总访客数 
+        <span id="busuanzi_value_site_uv"></span>
+         人
+      </span>
+    
+    
+
+  
+
+</div>
+
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":true,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.4/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  var relativeDate = function() {
+    var updatedTime = document.getElementById('updated-time');
+    if (updatedTime) {
+      var text = updatedTime.textContent;
+      var reg = /\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:Z|[+-]\d{2}:\d{2})/;
+      var matchs = text.match(reg);
+      if (matchs) {
+        var relativeTime = moment(matchs[0]).fromNow();
+        updatedTime.textContent = text.replace(reg, relativeTime);
+      }
+      updatedTime.style.display = '';
+    }
+  };
+  Fluid.utils.createScript('https://lib.baomitu.com/moment.js/2.29.4/moment.min.js', function() {
+    if (!'zh-cn'.startsWith('en')) {
+      Fluid.utils.createScript('https://lib.baomitu.com/moment.js/2.29.4/locale/zh-cn.min.js', function() {
+        relativeDate();
+      });
+    } else {
+      relativeDate();
+    }
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.20.1/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/5.0.0/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script  src="/js/local-search.js" ></script>
+
+  <script defer src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js" ></script>
+
+
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>

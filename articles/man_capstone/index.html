@@ -1,0 +1,1141 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/035b682805d10e4c77772bc6e936d08605d23c86.png">
+  <link rel="icon" href="/img/035b682805d10e4c77772bc6e936d08605d23c86.png">
+  
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+    <meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="Brassinolide">
+  <meta name="keywords" content="博客,计算机,编程,逆向工程,web安全,网络安全,技术文章,安全研究,ctf,python,c/c++">
+  
+    <meta name="description" content="capstone是一个非常轻量易用的反汇编引擎，拥有非常简洁的API，支持多平台多语言">
+<meta property="og:type" content="article">
+<meta property="og:title" content="capstone x86 python非官方文档">
+<meta property="og:url" content="https://crackme.net/articles/man_capstone/index.html">
+<meta property="og:site_name" content="CrackMe.net">
+<meta property="og:description" content="capstone是一个非常轻量易用的反汇编引擎，拥有非常简洁的API，支持多平台多语言">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2025-02-06T08:43:47.000Z">
+<meta property="article:modified_time" content="2025-02-06T08:53:35.067Z">
+<meta property="article:author" content="Brassinolide">
+<meta property="article:tag" content="编程">
+<meta property="article:tag" content="逆向工程">
+<meta property="article:tag" content="python">
+<meta name="twitter:card" content="summary_large_image">
+  
+  
+    <meta name="referrer" content="no-referrer-when-downgrade">
+  
+  
+  <title>capstone x86 python非官方文档 | CrackMe.net</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/KaTeX/0.16.2/katex.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1749284_5i9bdhy70f8.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1736178_k526ubmyhba.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+  
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_4819174_gp0ncad5v26.css">
+<link rel="stylesheet" href="/css/hexo-math-style.css">
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"crackme.net","root":"/","version":"1.9.8","typing":{"enable":false,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":true,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":false,"follow_dnt":true,"baidu":null,"google":{"measurement_id":null},"tencent":{"sid":null,"cid":null},"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false},"umami":{"src":null,"website_id":null,"domains":null,"start_time":"2024-01-01T00:00:00.000Z","token":null,"api_server":null}},"search_path":"/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+
+  
+<!-- hexo injector head_end start -->
+<link rel="stylesheet" href="/./css/hexo-math-style.css">
+<!-- hexo injector head_end end --><meta name="generator" content="Hexo 7.3.0"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 40vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>CrackMe.net</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/" target="_self">
+                <i class="iconfont icon-home-fill"></i>
+                <span>首页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/weixin/" target="_self">
+                <i class="iconfont icon-wechat-fill"></i>
+                <span>公众号</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/" target="_self">
+                <i class="iconfont icon-archive-fill"></i>
+                <span>归档</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/" target="_self">
+                <i class="iconfont icon-category-fill"></i>
+                <span>分类</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/" target="_self">
+                <i class="iconfont icon-tags-fill"></i>
+                <span>标签</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/" target="_self">
+                <i class="iconfont icon-user-fill"></i>
+                <span>关于</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/links/" target="_self">
+                <i class="iconfont icon-link-fill"></i>
+                <span>友链</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tools/" target="_self">
+                <i class="iconfont icon-briefcase"></i>
+                <span>在线工具</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="https://www.travellings.cn/go.html" target="_self">
+                <i class="iconfont icon-subway"></i>
+                <span>开往</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" false
+     style="background: url('/img/default.jpg') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle">capstone x86 python非官方文档</span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2025-02-06 16:43" pubdate>
+          2025年2月6日 下午
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          1.4k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          12 分钟
+        
+      </span>
+    
+
+    
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header">capstone x86 python非官方文档</h1>
+            
+              <p id="updated-time" class="note note-info" style="display: none">
+                
+                  
+                    本文最后更新于 2025-02-06T16:53:35+08:00
+                  
+                  
+
+                
+              </p>
+            
+            
+              <div class="markdown-body">
+                
+                <p><a target="_blank" rel="noopener" href="https://www.capstone-engine.org/">capstone</a>是一个非常轻量易用的反汇编引擎，拥有非常简洁的API，支持多平台多语言</p>
+<p>本文档仅涉及python和x86架构</p>
+<h1 id="安装"><a href="#安装" class="headerlink" title="安装"></a>安装</h1><p>从pip安装</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs shell">pip install capstone<br></code></pre></td></tr></table></figure>
+
+<p>从pip更新</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs shell">pip install capstone --upgrade<br></code></pre></td></tr></table></figure>
+
+<h1 id="示例"><a href="#示例" class="headerlink" title="示例"></a>示例</h1><p>先来看一段非常简短的反汇编示例</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><code class="hljs python"><span class="hljs-keyword">from</span> capstone <span class="hljs-keyword">import</span> *<br><span class="hljs-keyword">from</span> capstone.x86 <span class="hljs-keyword">import</span> *<br><br>CODE = <span class="hljs-string">b&quot;\x55\x48\x8B\x05\xB8\x13\x00\x00\x48\x39\xC3\x74\x03\x48\x31\xC0\xC3&quot;</span><br><br>md = Cs(CS_ARCH_X86, CS_MODE_64)<br>md.detail = <span class="hljs-literal">True</span><br><span class="hljs-keyword">for</span> i <span class="hljs-keyword">in</span> md.disasm(CODE, <span class="hljs-number">0x1000</span>):<br>    <span class="hljs-built_in">print</span>(<span class="hljs-string">&quot;0x%x:\t%s\t%s&quot;</span> %(i.address, i.mnemonic, i.op_str))<br></code></pre></td></tr></table></figure>
+
+<p>运行，输出为</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><code class="hljs python"><span class="hljs-number">0x1000</span>: push rbp<br><span class="hljs-number">0x1001</span>: mov rax, qword ptr [rip + <span class="hljs-number">0x13b8</span>]<br><span class="hljs-number">0x1008</span>: cmp rbx, rax<br><span class="hljs-number">0x100b</span>: je <span class="hljs-number">0x1010</span><br><span class="hljs-number">0x100d</span>: xor rax, rax<br><span class="hljs-number">0x1010</span>: ret<br></code></pre></td></tr></table></figure>
+
+<h1 id="Cs类"><a href="#Cs类" class="headerlink" title="Cs类"></a>Cs类</h1><p>两个初始化参数，第一个参数<code>arch</code>指定运行时宿主机架构（因为capstone的python实现本质上是ctypes调用动态库），第二个参数<code>mode</code>指定反汇编模式</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs python"><span class="hljs-keyword">class</span> <span class="hljs-title class_">Cs</span>(<span class="hljs-title class_ inherited__">object</span>):<br>    <span class="hljs-keyword">def</span> <span class="hljs-title function_">__init__</span>(<span class="hljs-params">self, arch, mode</span>):<br>    <span class="hljs-comment">#...</span><br></code></pre></td></tr></table></figure>
+
+<p>例如，将示例代码的模式更改为<code>CS_MODE_86</code>，输出</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><code class="hljs python"><span class="hljs-number">0x1000</span>: push ebp<br><span class="hljs-number">0x1001</span>: dec eax<br><span class="hljs-number">0x1002</span>: mov eax, dword ptr [<span class="hljs-number">0x13b8</span>]<br><span class="hljs-number">0x1008</span>: dec eax<br><span class="hljs-number">0x1009</span>: cmp ebx, eax<br><span class="hljs-number">0x100b</span>: je <span class="hljs-number">0x1010</span><br><span class="hljs-number">0x100d</span>: dec eax<br><span class="hljs-number">0x100e</span>: xor eax, eax<br><span class="hljs-number">0x1010</span>: ret<br></code></pre></td></tr></table></figure>
+
+<p>将<code>detail</code>成员变量设置为True可以获得更详细反汇编的内容</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs python">md.detail = <span class="hljs-literal">True</span><br></code></pre></td></tr></table></figure>
+
+<h1 id="disasm方法"><a href="#disasm方法" class="headerlink" title="disasm方法"></a>disasm方法</h1><p><code>code</code>：要反汇编的二进制数据<br><code>offset</code>：代码起始地址<br><code>count</code>：反汇编数量，默认为0，为0则表示全部反汇编</p>
+<p>返回生成器，可通过<code>list()</code>将其转换为数组</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs python"><span class="hljs-keyword">def</span> <span class="hljs-title function_">disasm</span>(<span class="hljs-params">self, code, offset, count=<span class="hljs-number">0</span></span>):<br>    <span class="hljs-comment">#...</span><br></code></pre></td></tr></table></figure>
+
+<p>例如，将示例代码的<code>offset</code>更改为0，<code>count</code>更改为3，运行<br>显而易见，只输出了3条，而且起始地址为0</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs python"><span class="hljs-number">0x0</span>: push ebp<br><span class="hljs-number">0x1</span>: dec eax<br><span class="hljs-number">0x2</span>: mov eax, dword ptr [<span class="hljs-number">0x13b8</span>]<br></code></pre></td></tr></table></figure>
+
+<h1 id="ModR-M字节、REX字节、SIB字节和SIB寻址"><a href="#ModR-M字节、REX字节、SIB字节和SIB寻址" class="headerlink" title="ModR&#x2F;M字节、REX字节、SIB字节和SIB寻址"></a>ModR&#x2F;M字节、REX字节、SIB字节和SIB寻址</h1><p>ModR&#x2F;M字节用于指定指令的操作数和寻址模式，由<code>mod</code>（2位），<code>reg/opcode</code>（3位），和<code>rm</code>（3位）三部分组成</p>
+<ul>
+<li><code>mod</code>：指定寻址模式<ul>
+<li><code>00</code>：寄存器间接寻址或直接内存寻址</li>
+<li><code>01</code>：8位偏移寄存器间接寻址</li>
+<li><code>10</code>：32位偏移寄存器间接寻址</li>
+<li><code>11</code>：寄存器直接寻址</li>
+</ul>
+</li>
+<li><code>reg/opcode</code>：指定寄存器或操作码扩展</li>
+<li><code>rm</code>：指定寄存器或内存操作数</li>
+</ul>
+<hr>
+<p>SIB（Scale-Index-Base）寻址使用<code>segment:[base + index * scale + displacement]</code>表示</p>
+<p>例如<code>mov ecx, ds:[eax + ebx * 4 + 16]</code>，<code>ds</code>是段寄存器（segment）（准确一点应该叫段选择子，因为现代x86架构中段寄存器存放的不是真的段地址），<code>eax</code>是基址寄存器（base），<code>ebx</code>是索引寄存器（index），<code>4</code>是比例因子（scale），<code>16</code>是位移（displacement）</p>
+<p>SIB寻址看起来长，原始二进制数据就1字节大（就是所谓的SIB字节），格式<code>SSIIIBBB</code></p>
+<ul>
+<li><code>SS</code>（Scale）：比例因子（1, 2, 4, 8）</li>
+<li><code>III</code>（Index）：索引寄存器</li>
+<li><code>BBB</code>（Base）：基址寄存器</li>
+</ul>
+<hr>
+<p>REX字节用于扩展寄存器和操作数的位数，格式为 &#96;0100 WRXB</p>
+<ul>
+<li><code>0100</code>：是常量魔数</li>
+<li><code>W</code>：指定操作数大小，1为64位，0为32位</li>
+<li><code>R</code>：扩展<code>ModR/M</code>字节中的<code>reg/opcode</code>字段</li>
+<li><code>X</code>：扩展<code>SIB</code>字节中的<code>Index</code>字段</li>
+<li><code>B</code>：扩展<code>ModR/M</code>字节中的<code>rm</code>字段或<code>SIB</code>字节中的<code>Base</code>字段</li>
+</ul>
+<p><strong>很复杂，但是了解就行，capstone都已经解析好了，就在CsInsn类的operands中</strong></p>
+<h1 id="CsInsn类"><a href="#CsInsn类" class="headerlink" title="CsInsn类"></a>CsInsn类</h1><p>disasm返回的生成器用来生成CsInsn类</p>
+<table>
+<thead>
+<tr>
+<th>成员变量</th>
+<th>类型</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>addr_size</td>
+<td>int</td>
+<td>地址大小，该值固定，取决于反汇编模式：32位是4，64位是8</td>
+</tr>
+<tr>
+<td>address</td>
+<td>int</td>
+<td>指令地址</td>
+</tr>
+<tr>
+<td>avx_cc</td>
+<td>int</td>
+<td>AVX指令的条件码（Condition Code）</td>
+</tr>
+<tr>
+<td>avx_rm</td>
+<td>int</td>
+<td>AVX指令浮点运算的舍入模式（Rounding Mode）</td>
+</tr>
+<tr>
+<td>avx_sae</td>
+<td>bool</td>
+<td>AVX指令的SAE（Suppress All Exceptions）标志，控制浮点运算是否抛出异常</td>
+</tr>
+<tr>
+<td>bytes</td>
+<td>bytearray</td>
+<td>指令的原始二进制数据</td>
+</tr>
+<tr>
+<td>disp</td>
+<td>int</td>
+<td>SIB位移（displacement）</td>
+</tr>
+<tr>
+<td>disp_offset</td>
+<td>int</td>
+<td>SIB位移在指令中的位置</td>
+</tr>
+<tr>
+<td>disp_size</td>
+<td>int</td>
+<td>SIB位移大小</td>
+</tr>
+<tr>
+<td>eflags</td>
+<td>int</td>
+<td>该指令可能会修改的eflags标志，由X86_EFLAGS_*枚举，例如cmp指令该值为<code>0011 1111</code>，代表会修改AF CF SF ZF PF OF标志</td>
+</tr>
+<tr>
+<td>encoding</td>
+<td>CsX86Encoding</td>
+<td>包含<code>disp_offset</code> <code>disp_size</code> <code>imm_offset</code> <code>imm_size</code> <code>modrm_offset</code></td>
+</tr>
+<tr>
+<td>fpu_flags</td>
+<td>int</td>
+<td>该指令可能会修改的浮点单元（Floating Point Unit）标志，由X86_FPU_FLAGS_*枚举</td>
+</tr>
+<tr>
+<td>groups</td>
+<td>List[int]</td>
+<td>指令所属的组，由X86_GRP_*枚举，例如和分支相关的指令为X86_GRP_BRANCH_RELATIVE</td>
+</tr>
+<tr>
+<td>id</td>
+<td>int</td>
+<td>指令的id，由X86_INS_*枚举，例如460是X86_INS_MOV</td>
+</tr>
+<tr>
+<td>imm_offset</td>
+<td>int</td>
+<td>立即数在指令中的位置</td>
+</tr>
+<tr>
+<td>imm_size</td>
+<td>int</td>
+<td>立即数的字节大小</td>
+</tr>
+<tr>
+<td>menmonic</td>
+<td>str</td>
+<td>指令字符串，例如”mov”</td>
+</tr>
+<tr>
+<td>modrm</td>
+<td>int</td>
+<td>ModR&#x2F;M字节</td>
+</tr>
+<tr>
+<td>modrm_offset</td>
+<td>int</td>
+<td>ModR&#x2F;M字节在指令中的位置</td>
+</tr>
+<tr>
+<td>op_str</td>
+<td>str</td>
+<td>操作数字符串，例如”rax, qword ptr [rip + 0x13b8]“</td>
+</tr>
+<tr>
+<td>opcode</td>
+<td>List[int]</td>
+<td>操作码</td>
+</tr>
+<tr>
+<td>operands</td>
+<td>List[X86Op]</td>
+<td>操作数类</td>
+</tr>
+<tr>
+<td>prefix</td>
+<td>List[int]</td>
+<td>前缀，用于切换操作数大小、指定段寄存器等</td>
+</tr>
+<tr>
+<td>regs_read</td>
+<td>List[int]</td>
+<td>读取的寄存器，由X86_REG_*枚举，例如35是X86_REG_RAX</td>
+</tr>
+<tr>
+<td>regs_write</td>
+<td>List[int]</td>
+<td>写入的寄存器，同上</td>
+</tr>
+<tr>
+<td>rex</td>
+<td>int</td>
+<td>REX字节</td>
+</tr>
+<tr>
+<td>sib</td>
+<td>int</td>
+<td>SIB字节</td>
+</tr>
+<tr>
+<td>sib_base</td>
+<td>int</td>
+<td>SIB基址寄存器（base）</td>
+</tr>
+<tr>
+<td>sib_index</td>
+<td>int</td>
+<td>SIB索引寄存器（index）</td>
+</tr>
+<tr>
+<td>sib_scale</td>
+<td>int</td>
+<td>SIB比例因子（scale）</td>
+</tr>
+<tr>
+<td>size</td>
+<td>int</td>
+<td>指令原始二进制数据的长度</td>
+</tr>
+<tr>
+<td>sse_cc</td>
+<td>int</td>
+<td>SSE指令的条件码</td>
+</tr>
+<tr>
+<td>xop_cc</td>
+<td>int</td>
+<td>XOP指令的条件码</td>
+</tr>
+</tbody></table>
+<h1 id="X86Op类（操作数类）"><a href="#X86Op类（操作数类）" class="headerlink" title="X86Op类（操作数类）"></a>X86Op类（操作数类）</h1><table>
+<thead>
+<tr>
+<th>成员变量</th>
+<th>类型</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>access</td>
+<td>int</td>
+<td>指令对内存或寄存器的访问模式，是读取（CS_AC_READ）还是写入（CS_AC_WRITE）</td>
+</tr>
+<tr>
+<td>avx_bcast</td>
+<td>int</td>
+<td>AVX指令广播模式，由CS_AVX_BCAST_*枚举</td>
+</tr>
+<tr>
+<td>avx_zero_opmask</td>
+<td>bool</td>
+<td>AVX指令是否使用零掩码（好像只有AVX-512支持），也就是是否将掩码寄存器中未选中的元素置零</td>
+</tr>
+<tr>
+<td>imm</td>
+<td>int</td>
+<td>如果操作数是立即数，该值就是该立即数</td>
+</tr>
+<tr>
+<td>mem</td>
+<td>X86OpMem</td>
+<td>如果操作数是内存，该类存放的就是SIB寻址内容</td>
+</tr>
+<tr>
+<td>mem.base</td>
+<td>int</td>
+<td>SIB基址寄存器（base）</td>
+</tr>
+<tr>
+<td>mem.disp</td>
+<td>int</td>
+<td>SIB位移（displacement）</td>
+</tr>
+<tr>
+<td>mem.index</td>
+<td>int</td>
+<td>SIB索引寄存器（index）</td>
+</tr>
+<tr>
+<td>mem.scale</td>
+<td>int</td>
+<td>SIB比例因子（scale）</td>
+</tr>
+<tr>
+<td>mem.segment</td>
+<td>int</td>
+<td>SIB段选择子（segment）</td>
+</tr>
+<tr>
+<td>reg</td>
+<td>int</td>
+<td>如果操作数是寄存器，该值就是该寄存器</td>
+</tr>
+<tr>
+<td>size</td>
+<td>int</td>
+<td>操作大小，比如al是1，ax是2，eax是4，rax是8</td>
+</tr>
+<tr>
+<td>type</td>
+<td>int</td>
+<td>操作数类型，是立即数（X86_OP_IMM）还是寄存器（X86_OP_REG）还是内存（X86_OP_MEM）</td>
+</tr>
+<tr>
+<td>value</td>
+<td>X86OpValue</td>
+<td>包含<code>mem</code> <code>imm</code> <code>reg</code></td>
+</tr>
+</tbody></table>
+<h1 id="keystone文档"><a href="#keystone文档" class="headerlink" title="keystone文档"></a>keystone文档</h1><p>都反汇编了，顺带把汇编的文档也写了（笑</p>
+<p>反汇编用<a target="_blank" rel="noopener" href="https://www.capstone-engine.org/">capstone</a>，那么汇编就要用到<a target="_blank" rel="noopener" href="https://www.keystone-engine.org/">keystone</a></p>
+<p>从pip安装</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs shell">pip install keystone-engine<br></code></pre></td></tr></table></figure>
+
+<p>从pip更新</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs shell">pip install keystone-engine --upgrade<br></code></pre></td></tr></table></figure>
+
+<p>这玩意用起来非常简单，都不需要文档，贴个代码瞪眼一看就懂了</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><code class="hljs python"><span class="hljs-keyword">from</span> keystone <span class="hljs-keyword">import</span> *<br><br>instructions_str=<span class="hljs-string">&quot;&quot;&quot;</span><br><span class="hljs-string">push rbp</span><br><span class="hljs-string">mov rax, qword ptr [rip + 0x13b8]</span><br><span class="hljs-string">cmp rbx, rax</span><br><span class="hljs-string">je LABEL_1</span><br><span class="hljs-string">xor rax, rax</span><br><span class="hljs-string">LABEL_1:</span><br><span class="hljs-string">ret</span><br><span class="hljs-string">&quot;&quot;&quot;</span><br><br><span class="hljs-keyword">try</span>:<br>    encoding, count = Ks(KS_ARCH_X86, KS_MODE_64).asm(instructions_str)<br>    <span class="hljs-keyword">with</span> <span class="hljs-built_in">open</span>(<span class="hljs-string">&quot;output.bin&quot;</span>, <span class="hljs-string">&quot;wb&quot;</span>) <span class="hljs-keyword">as</span> f:<br>        f.write(<span class="hljs-built_in">bytes</span>(encoding))<br><span class="hljs-keyword">except</span> KsError <span class="hljs-keyword">as</span> e:<br>    <span class="hljs-built_in">print</span>(<span class="hljs-string">&quot;编译错误：%s&quot;</span> % e)<br></code></pre></td></tr></table></figure>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+    <div class="post-meta mr-3 d-flex align-items-center">
+      <i class="iconfont icon-category"></i>
+      
+
+<span class="category-chains">
+  
+  
+    
+      <span class="category-chain">
+        
+  <a href="/categories/%E6%96%87%E6%A1%A3/" class="category-chain-item">文档</a>
+  
+  
+
+      </span>
+    
+  
+</span>
+
+    </div>
+  
+  
+    <div class="post-meta">
+      <i class="iconfont icon-tags"></i>
+      
+        <a href="/tags/%E7%BC%96%E7%A8%8B/" class="print-no-link">#编程</a>
+      
+        <a href="/tags/%E9%80%86%E5%90%91%E5%B7%A5%E7%A8%8B/" class="print-no-link">#逆向工程</a>
+      
+        <a href="/tags/python/" class="print-no-link">#python</a>
+      
+    </div>
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>capstone x86 python非官方文档</div>
+      <div>https://crackme.net/articles/man_capstone/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>Brassinolide</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2025年2月6日</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by-nc-sa/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-cc-by"></i>
+                  </span>
+                </a>
+              
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by-nc-sa/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="NC - 非商业性使用">
+                    <i class="iconfont icon-cc-nc"></i>
+                  </span>
+                </a>
+              
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by-nc-sa/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="SA - 相同方式共享">
+                    <i class="iconfont icon-cc-sa"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/articles/bypass_icp/" title="国内服务器如何免备案">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">国内服务器如何免备案</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/articles/openssl/" title="在windows上静态编译openssl">
+                        <span class="hidden-mobile">在windows上静态编译openssl</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+  
+  
+    <article id="comments" lazyload>
+      
+  <script type="text/javascript">
+    Fluid.utils.loadComments('#comments', function() {
+      var light = 'github-light';
+      var dark = 'github-dark';
+      var schema = document.documentElement.getAttribute('data-user-color-scheme');
+      if (schema === 'dark') {
+        schema = dark;
+      } else {
+        schema = light;
+      }
+      window.UtterancesThemeLight = light;
+      window.UtterancesThemeDark = dark;
+      var s = document.createElement('script');
+      s.setAttribute('src', 'https://utteranc.es/client.js');
+      s.setAttribute('repo', 'Brassinolide/Brassinolide.github.io');
+      s.setAttribute('issue-term', 'pathname');
+      
+      s.setAttribute('label', 'utterances');
+      
+      s.setAttribute('theme', schema);
+      s.setAttribute('crossorigin', 'anonymous');
+      document.getElementById('comments').appendChild(s);
+    })
+  </script>
+  <noscript>Please enable JavaScript to view the comments</noscript>
+
+
+    </article>
+  
+
+
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+  
+  
+
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       框架 <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> | 主题 <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> <div style="font-size: 0.85rem"> <span id="timeDate">载入天数...</span> <span id="times">载入时分秒...</span> <script src="/js/duration.js"></script> </div> 
+    </div>
+  
+  
+    <div class="statistics">
+  
+  
+
+  
+    
+      <span id="busuanzi_container_site_pv" style="display: none">
+        总访问量 
+        <span id="busuanzi_value_site_pv"></span>
+         次
+      </span>
+    
+    
+      <span id="busuanzi_container_site_uv" style="display: none">
+        总访客数 
+        <span id="busuanzi_value_site_uv"></span>
+         人
+      </span>
+    
+    
+
+  
+
+</div>
+
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":true,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.4/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  var relativeDate = function() {
+    var updatedTime = document.getElementById('updated-time');
+    if (updatedTime) {
+      var text = updatedTime.textContent;
+      var reg = /\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:Z|[+-]\d{2}:\d{2})/;
+      var matchs = text.match(reg);
+      if (matchs) {
+        var relativeTime = moment(matchs[0]).fromNow();
+        updatedTime.textContent = text.replace(reg, relativeTime);
+      }
+      updatedTime.style.display = '';
+    }
+  };
+  Fluid.utils.createScript('https://lib.baomitu.com/moment.js/2.29.4/moment.min.js', function() {
+    if (!'zh-cn'.startsWith('en')) {
+      Fluid.utils.createScript('https://lib.baomitu.com/moment.js/2.29.4/locale/zh-cn.min.js', function() {
+        relativeDate();
+      });
+    } else {
+      relativeDate();
+    }
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.20.1/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/5.0.0/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script  src="/js/local-search.js" ></script>
+
+  <script defer src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js" ></script>
+
+
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>

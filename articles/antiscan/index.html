@@ -1,0 +1,894 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/035b682805d10e4c77772bc6e936d08605d23c86.png">
+  <link rel="icon" href="/img/035b682805d10e4c77772bc6e936d08605d23c86.png">
+  
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+    <meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="Brassinolide">
+  <meta name="keywords" content="博客,计算机,编程,逆向工程,web安全,网络安全,技术文章,安全研究,ctf,python,c/c++">
+  
+    <meta name="description" content="文章详解了TCP-SYN&#x2F;NULL&#x2F;FIN&#x2F;XMAS&#x2F;ACK&#x2F;Connect&#x2F;Grab端口扫描原理，并用基于iptables的规则阻止端口扫描">
+<meta property="og:type" content="article">
+<meta property="og:title" content="论文研读《Detecting and deceiving network scans》">
+<meta property="og:url" content="https://crackme.net/articles/antiscan/index.html">
+<meta property="og:site_name" content="CrackMe.net">
+<meta property="og:description" content="文章详解了TCP-SYN&#x2F;NULL&#x2F;FIN&#x2F;XMAS&#x2F;ACK&#x2F;Connect&#x2F;Grab端口扫描原理，并用基于iptables的规则阻止端口扫描">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://crackme.net/articles/antiscan/4.png">
+<meta property="og:image" content="https://crackme.net/articles/antiscan/3.png">
+<meta property="og:image" content="https://crackme.net/articles/antiscan/1.png">
+<meta property="og:image" content="https://crackme.net/articles/antiscan/2.png">
+<meta property="og:image" content="https://crackme.net/articles/antiscan/5.png">
+<meta property="article:published_time" content="2025-02-11T05:19:32.000Z">
+<meta property="article:modified_time" content="2025-02-11T15:51:39.567Z">
+<meta property="article:author" content="Brassinolide">
+<meta property="article:tag" content="编程">
+<meta property="article:tag" content="网络安全">
+<meta property="article:tag" content="网络工程">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://crackme.net/articles/antiscan/4.png">
+  
+  
+    <meta name="referrer" content="no-referrer-when-downgrade">
+  
+  
+  <title>论文研读《Detecting and deceiving network scans》 | CrackMe.net</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/KaTeX/0.16.2/katex.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1749284_5i9bdhy70f8.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1736178_k526ubmyhba.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+  
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_4819174_gp0ncad5v26.css">
+<link rel="stylesheet" href="/css/hexo-math-style.css">
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"crackme.net","root":"/","version":"1.9.8","typing":{"enable":false,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":true,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":false,"follow_dnt":true,"baidu":null,"google":{"measurement_id":null},"tencent":{"sid":null,"cid":null},"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false},"umami":{"src":null,"website_id":null,"domains":null,"start_time":"2024-01-01T00:00:00.000Z","token":null,"api_server":null}},"search_path":"/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+
+  
+<!-- hexo injector head_end start -->
+<link rel="stylesheet" href="/./css/hexo-math-style.css">
+<!-- hexo injector head_end end --><meta name="generator" content="Hexo 7.3.0"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 40vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>CrackMe.net</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/" target="_self">
+                <i class="iconfont icon-home-fill"></i>
+                <span>首页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/weixin/" target="_self">
+                <i class="iconfont icon-wechat-fill"></i>
+                <span>公众号</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/" target="_self">
+                <i class="iconfont icon-archive-fill"></i>
+                <span>归档</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/" target="_self">
+                <i class="iconfont icon-category-fill"></i>
+                <span>分类</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/" target="_self">
+                <i class="iconfont icon-tags-fill"></i>
+                <span>标签</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/" target="_self">
+                <i class="iconfont icon-user-fill"></i>
+                <span>关于</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/links/" target="_self">
+                <i class="iconfont icon-link-fill"></i>
+                <span>友链</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tools/" target="_self">
+                <i class="iconfont icon-briefcase"></i>
+                <span>在线工具</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="https://www.travellings.cn/go.html" target="_self">
+                <i class="iconfont icon-subway"></i>
+                <span>开往</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" false
+     style="background: url('/img/default.jpg') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle">论文研读《Detecting and deceiving network scans》</span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2025-02-11 13:19" pubdate>
+          2025年2月11日 下午
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          1.9k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          17 分钟
+        
+      </span>
+    
+
+    
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header">论文研读《Detecting and deceiving network scans》</h1>
+            
+              <p id="updated-time" class="note note-info" style="display: none">
+                
+                  
+                    本文最后更新于 2025-02-11T23:51:39+08:00
+                  
+                  
+
+                
+              </p>
+            
+            
+              <div class="markdown-body">
+                
+                <p>论文原文：<a target="_blank" rel="noopener" href="https://inai.de/documents/Chaostables.pdf">https://inai.de/documents/Chaostables.pdf</a></p>
+<p><strong>iptables无法实现复杂检测规则，iptables编写的防火墙有较大概率假阳或假阴，不建议在生产环境中使用</strong></p>
+<h1 id="隐蔽扫描"><a href="#隐蔽扫描" class="headerlink" title="隐蔽扫描"></a>隐蔽扫描</h1><p>标准的TCP连接以SYN包开始，其他一切都会被视为异常，隐蔽扫描就是通过构造异常的数据包来进行扫描</p>
+<p>隐蔽扫描非常容易被阻止，只需要简单的丢弃所有异常数据包就可以（一点也不隐蔽，为什么要起这个名字，雾）</p>
+<p>隐蔽扫描同时也非常不可靠，可能在路由上就被丢弃导致无法到达目标，目标也可能全部不响应或全部RST导致误判</p>
+<h2 id="NULL扫描"><a href="#NULL扫描" class="headerlink" title="NULL扫描"></a>NULL扫描</h2><p>NULL扫描的原理是发送一个没有任何标志位的TCP包（RFC-793标准规定：开放端口应忽略没有标志位的数据包）</p>
+<p>NULL扫描无法判断出端口是开放还是被过滤（因为都没有响应）</p>
+<blockquote>
+<p>端口开放，目标主机不会回复<br>端口关闭，目标回复RST-ACK</p>
+</blockquote>
+<p>如果所有标志位都为0，数据包是无效的，路由器、防火墙、操作系统可能会直接丢弃这种数据包，导致NULL扫描无法正常工作</p>
+<p>在我测试过程中，NULL包确实不能到达阿里云上的服务器，只能对内网设备进行扫描</p>
+<p>以下是一个NULL扫描器示例代码，扫描内网的设备</p>
+<p><img src="/articles/antiscan/4.png" srcset="/img/loading.gif" lazyload></p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><code class="hljs python"><span class="hljs-keyword">from</span> scapy.<span class="hljs-built_in">all</span> <span class="hljs-keyword">import</span> *<br><br>SYN = <span class="hljs-number">0x02</span><br>RST = <span class="hljs-number">0x04</span><br>ACK = <span class="hljs-number">0x10</span><br>SYN_ACK = <span class="hljs-number">0x12</span><br>RST_ACK = <span class="hljs-number">0x14</span><br><br><span class="hljs-keyword">def</span> <span class="hljs-title function_">null_scan</span>(<span class="hljs-params">ip:<span class="hljs-built_in">str</span>, port:<span class="hljs-built_in">int</span>, timeout:<span class="hljs-built_in">int</span> = <span class="hljs-number">5</span></span>) -&gt; <span class="hljs-built_in">bool</span>:<br>    ip_pkt = IP(dst = ip)<br>    tcp_pkt = TCP(sport = RandShort()._fix(), dport = port, flags = <span class="hljs-number">0</span>)<br>    response = sr1(ip_pkt / tcp_pkt, timeout = timeout, verbose = <span class="hljs-number">0</span>)<br>    <span class="hljs-keyword">if</span> response <span class="hljs-keyword">is</span> <span class="hljs-literal">None</span>:<br>        <span class="hljs-keyword">return</span> <span class="hljs-literal">True</span><br>    <span class="hljs-keyword">elif</span> response.haslayer(TCP):<br>        <span class="hljs-keyword">if</span> response.getlayer(TCP).flags == RST_ACK:<br>            <span class="hljs-keyword">return</span> <span class="hljs-literal">False</span><br>        <span class="hljs-keyword">else</span>:<br>            <span class="hljs-keyword">raise</span> RuntimeError(<span class="hljs-string">f&quot;未知flags：<span class="hljs-subst">&#123;flags&#125;</span>&quot;</span>)<br><br><span class="hljs-keyword">for</span> i <span class="hljs-keyword">in</span> [<span class="hljs-number">21</span>,<span class="hljs-number">22</span>,<span class="hljs-number">80</span>,<span class="hljs-number">443</span>,<span class="hljs-number">8889</span>,<span class="hljs-number">39001</span>]:<br>    <span class="hljs-keyword">try</span>:<br>        <span class="hljs-keyword">if</span> null_scan(<span class="hljs-string">&quot;192.168.0.1&quot;</span>, i):<br>            <span class="hljs-built_in">print</span>(<span class="hljs-string">f&quot;<span class="hljs-subst">&#123;i&#125;</span> 开放/过滤&quot;</span>)<br>        <span class="hljs-keyword">else</span>:<br>            <span class="hljs-built_in">print</span>(<span class="hljs-string">f&quot;<span class="hljs-subst">&#123;i&#125;</span> 关闭&quot;</span>)<br>    <span class="hljs-keyword">except</span> RuntimeError <span class="hljs-keyword">as</span> e:<br>        <span class="hljs-built_in">print</span>(e)<br></code></pre></td></tr></table></figure>
+
+<p>iptables阻止NULL扫描：</p>
+<p>既然NULL数据包是无效的，那直接全部丢弃就行，也不用怕丢错导致网络出现问题</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs shell">-A INPUT -p tcp --tcp-flags ALL NONE -j DROP<br></code></pre></td></tr></table></figure>
+
+<h2 id="FIN扫描、XMAS扫描和ACK扫描"><a href="#FIN扫描、XMAS扫描和ACK扫描" class="headerlink" title="FIN扫描、XMAS扫描和ACK扫描"></a>FIN扫描、XMAS扫描和ACK扫描</h2><p>FIN扫描原理和NULL扫描原理类似，但是只设置FIN标志位</p>
+<p>XMAS扫描同理，设置FIN、URG和PSH标志位</p>
+<p>ACK扫描同理，只设置ACK标志位</p>
+<p>此处不再提供示例代码</p>
+<h2 id="iptables阻止隐蔽扫描"><a href="#iptables阻止隐蔽扫描" class="headerlink" title="iptables阻止隐蔽扫描"></a>iptables阻止隐蔽扫描</h2><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><code class="hljs shell"><span class="hljs-meta prompt_"># </span><span class="language-bash">tcp_inval链</span><br>-N tcp_inval;<br><span class="hljs-meta prompt_">#</span><span class="language-bash"><span class="hljs-comment"># 允许正常的RST包</span></span><br>-A tcp_inval -p tcp --tcp-flags SYN,FIN,RST,ACK RST,ACK -j RETURN;<br><span class="hljs-meta prompt_">#</span><span class="language-bash"><span class="hljs-comment"># 记录异常包</span></span><br>-A tcp_inval -j LOG --log-prefix &quot;[STEALTH] &quot;;<br><span class="hljs-meta prompt_">#</span><span class="language-bash"><span class="hljs-comment"># 丢弃异常包</span></span><br>-A tcp_inval -j DROP;<br><span class="hljs-meta prompt_"></span><br><span class="hljs-meta prompt_"># </span><span class="language-bash">匹配大多数隐蔽扫描数据包（NULL,FIN,Xmas）</span><br><span class="hljs-meta prompt_"># </span><span class="language-bash">但是不检测ACK扫描，因为这可能导致误判</span><br>-A INPUT -p tcp ! --syn -m conntrack --ctstate INVALID -j tcp_inval;<br></code></pre></td></tr></table></figure>
+
+<h1 id="半开扫描"><a href="#半开扫描" class="headerlink" title="半开扫描"></a>半开扫描</h1><p>半开扫描，基本思想是不完成完整的三次握手，以规避防火墙的检测</p>
+<p>隐蔽扫描构造异常数据包，半开扫描构造的是合法数据包</p>
+<h2 id="SYN扫描"><a href="#SYN扫描" class="headerlink" title="SYN扫描"></a>SYN扫描</h2><p>SYN扫描利用TCP三次握手机制，TCP三次握手此处不再赘述</p>
+<p>RFC-793标准规定：当尝试连接到一个关闭的端口时，目标主机应返回一个RST响应，表示该端口不可达</p>
+<blockquote>
+<p>扫描器向目标端口发送SYN<br>端口开放，目标回复SYN-ACK<br>端口关闭，目标回复RST-ACK</p>
+</blockquote>
+<p>以下是一个SYN扫描器示例代码</p>
+<p><img src="/articles/antiscan/3.png" srcset="/img/loading.gif" lazyload></p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br></pre></td><td class="code"><pre><code class="hljs python"><span class="hljs-keyword">from</span> scapy.<span class="hljs-built_in">all</span> <span class="hljs-keyword">import</span> *<br><br>SYN = <span class="hljs-number">0x02</span><br>RST = <span class="hljs-number">0x04</span><br>ACK = <span class="hljs-number">0x10</span><br>SYN_ACK = <span class="hljs-number">0x12</span><br>RST_ACK = <span class="hljs-number">0x14</span><br><br><span class="hljs-keyword">def</span> <span class="hljs-title function_">syn_scan</span>(<span class="hljs-params">ip:<span class="hljs-built_in">str</span>, port:<span class="hljs-built_in">int</span>, rst:<span class="hljs-built_in">bool</span> = <span class="hljs-literal">True</span>, timeout:<span class="hljs-built_in">int</span> = <span class="hljs-number">5</span></span>) -&gt; <span class="hljs-built_in">bool</span>:<br>    ip_pkt = IP(dst = ip)<br>    tcp_pkt = TCP(sport = RandShort()._fix(), dport = port, flags = <span class="hljs-string">&quot;S&quot;</span>)<br>    response = sr1(ip_pkt / tcp_pkt, timeout = timeout, verbose = <span class="hljs-number">0</span>)<br>    <span class="hljs-keyword">if</span> response <span class="hljs-keyword">and</span> response.haslayer(TCP):<br>        flags = response.getlayer(TCP).flags<br>        <span class="hljs-keyword">if</span> flags == SYN_ACK:<br>            <span class="hljs-keyword">if</span> rst:<br>                send(ip_pkt / TCP(sport = tcp_pkt.sport, dport = port, flags = <span class="hljs-string">&quot;RA&quot;</span>, seq = response.ack, ack = response.seq + <span class="hljs-number">1</span>), verbose = <span class="hljs-number">0</span>)<br>            <span class="hljs-keyword">return</span> <span class="hljs-literal">True</span><br>        <span class="hljs-keyword">elif</span> flags == RST_ACK:<br>            <span class="hljs-keyword">return</span> <span class="hljs-literal">False</span><br>        <span class="hljs-keyword">else</span>:<br>            <span class="hljs-keyword">raise</span> RuntimeError(<span class="hljs-string">f&quot;<span class="hljs-subst">&#123;port&#125;</span> 未知flags：<span class="hljs-subst">&#123;flags&#125;</span>&quot;</span>)<br>    <span class="hljs-keyword">else</span>:<br>        <span class="hljs-keyword">raise</span> RuntimeError(<span class="hljs-string">f&quot;<span class="hljs-subst">&#123;port&#125;</span> 服务器无响应&quot;</span>)<br><br><span class="hljs-keyword">for</span> i <span class="hljs-keyword">in</span> [<span class="hljs-number">21</span>,<span class="hljs-number">22</span>,<span class="hljs-number">80</span>,<span class="hljs-number">443</span>,<span class="hljs-number">8889</span>,<span class="hljs-number">39001</span>]:<br>    <span class="hljs-keyword">try</span>:<br>        <span class="hljs-keyword">if</span> syn_scan(<span class="hljs-string">&quot;目标IP&quot;</span>, i):<br>            <span class="hljs-built_in">print</span>(<span class="hljs-string">f&quot;<span class="hljs-subst">&#123;i&#125;</span> 开放&quot;</span>)<br>        <span class="hljs-keyword">else</span>:<br>            <span class="hljs-built_in">print</span>(<span class="hljs-string">f&quot;<span class="hljs-subst">&#123;i&#125;</span> 关闭&quot;</span>)<br>    <span class="hljs-keyword">except</span> RuntimeError <span class="hljs-keyword">as</span> e:<br>        <span class="hljs-built_in">print</span>(e)<br></code></pre></td></tr></table></figure>
+
+<p>完全阻止SYN扫描是不可能的，因为无法判断客户端发送的SYN是真实连接还是扫描尝试<br>唯一能做的，就是标记可能的SYN扫描，阻止进一步的扫描</p>
+<p>注意到，SYN扫描特征：</p>
+<blockquote>
+<p>多次尝试连接不同的端口，且不完成完整的三次握手</p>
+</blockquote>
+<p>扫描器发送RST终止三次握手</p>
+<p><img src="/articles/antiscan/1.png" srcset="/img/loading.gif" lazyload></p>
+<p>扫描器不发送RST，此时服务器多次重发SYN+ACK直到超时才终止三次握手</p>
+<p><img src="/articles/antiscan/2.png" srcset="/img/loading.gif" lazyload></p>
+<p>iptables阻止SYN扫描：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br></pre></td><td class="code"><pre><code class="hljs shell"><span class="hljs-meta prompt_"># </span><span class="language-bash">定义四个状态</span><br>SYN=401<br>CLOSED=402<br>SYNSCAN=403<br>ESTAB=404<br><span class="hljs-meta prompt_"></span><br><span class="hljs-meta prompt_"># </span><span class="language-bash">标记关闭的连接</span><br>-N mark_closed<br>-A mark_closed -j CONNMARK --set-mark $CLOSED<br><span class="hljs-meta prompt_"></span><br><span class="hljs-meta prompt_"># </span><span class="language-bash">标记已建立的连接</span><br>-N mark_estab<br>-A mark_estab -j CONNMARK --set-mark $ESTAB<br><span class="hljs-meta prompt_"></span><br><span class="hljs-meta prompt_"># </span><span class="language-bash">tcp_new1链用于处理新TCP连接</span><br>-N tcp_new1<br><span class="hljs-meta prompt_">#</span><span class="language-bash"><span class="hljs-comment"># 处理回环接口特殊情况</span></span><br><span class="hljs-meta prompt_">#</span><span class="language-bash"><span class="hljs-comment">## 数据包来自回环接口且是SYN-ACK包，直接返回不做处理</span></span><br>-A tcp_new1 -i lo -p tcp --tcp-flags ALL SYN,ACK -j RETURN<br><span class="hljs-meta prompt_">#</span><span class="language-bash"><span class="hljs-comment">## 数据包来自回环接口且是RST-ACK包，跳转到mark_closed链，将连接标记为CLOSED状态</span></span><br>-A tcp_new1 -i lo -p tcp --tcp-flags ALL RST,ACK -g mark_closed<br><span class="hljs-meta prompt_">#</span><span class="language-bash"><span class="hljs-comment"># 处理正常TCP连接</span></span><br><span class="hljs-meta prompt_">#</span><span class="language-bash"><span class="hljs-comment">## 数据包是ACK包，跳转到mark_estab链，将连接标记为ESTAB状态</span></span><br>-A tcp_new1 -p tcp --tcp-flags ALL ACK -g mark_estab<br><span class="hljs-meta prompt_">#</span><span class="language-bash"><span class="hljs-comment">## 数据包不符合上述条件，将其标记为SYNSCAN状态</span></span><br>-A tcp_new1 -j CONNMARK --set-mark $SYNSCAN<br><span class="hljs-meta prompt_"></span><br><span class="hljs-meta prompt_"># </span><span class="language-bash">匹配标记为SYN的连接，并将其交给tcp_new1链处理</span><br>-A INPUT -m connmark --mark $SYN -j tcp_new1<br><span class="hljs-meta prompt_"></span><br><span class="hljs-meta prompt_"># </span><span class="language-bash">如果收到一个新的SYN包（即新连接），将其标记为SYN状态</span><br>-A INPUT -p tcp --syn -m conntrack --ctstate NEW -j CONNMARK --set-mark $SYN<br><span class="hljs-meta prompt_"></span><br><span class="hljs-meta prompt_"># </span><span class="language-bash">处理SYN扫描的逻辑</span><br><span class="hljs-meta prompt_">#</span><span class="language-bash"><span class="hljs-comment"># 方式1：在tcp_new1链中直接跳转到handle_evil链</span></span><br>-A tcp_new1 -j handle_evil<br><span class="hljs-meta prompt_">#</span><span class="language-bash"><span class="hljs-comment"># 方式2：标记为SYNSCAN的连接丢到handle_evil链中</span></span><br>-A INPUT -m connmark --mark $SYNSCAN -j handle_evil<br><span class="hljs-meta prompt_"></span><br><span class="hljs-meta prompt_"># </span><span class="language-bash">handle_evil链逻辑，比如禁止IP访问等</span><br><span class="hljs-meta prompt_"># </span><span class="language-bash">...</span><br></code></pre></td></tr></table></figure>
+
+<h1 id="全开扫描"><a href="#全开扫描" class="headerlink" title="全开扫描"></a>全开扫描</h1><p>全开扫描经过三次握手建立完整的TCP连接，</p>
+<p>半开扫描使用raw socket通常需要root权限，全开扫描主要用于无权限情况</p>
+<h2 id="Connect扫描"><a href="#Connect扫描" class="headerlink" title="Connect扫描"></a>Connect扫描</h2><p>以下是一个Connect扫描器示例代码</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><code class="hljs python"><span class="hljs-keyword">import</span> socket<br><br><span class="hljs-keyword">def</span> <span class="hljs-title function_">connect_scan</span>(<span class="hljs-params">ip:<span class="hljs-built_in">str</span>, port:<span class="hljs-built_in">int</span>, timeout:<span class="hljs-built_in">int</span> = <span class="hljs-number">5</span></span>) -&gt; <span class="hljs-built_in">bool</span>:<br>    <span class="hljs-keyword">with</span> socket.socket(socket.AF_INET, socket.SOCK_STREAM) <span class="hljs-keyword">as</span> sock:<br>        sock.settimeout(timeout)<br>        <span class="hljs-keyword">try</span>:<br>            sock.connect((ip, port))<br>        <span class="hljs-keyword">except</span> (socket.timeout, socket.error):<br>            <span class="hljs-keyword">return</span> <span class="hljs-literal">False</span><br>        <span class="hljs-keyword">return</span> <span class="hljs-literal">True</span><br><br><span class="hljs-keyword">for</span> i <span class="hljs-keyword">in</span> [<span class="hljs-number">21</span>,<span class="hljs-number">22</span>,<span class="hljs-number">80</span>,<span class="hljs-number">443</span>,<span class="hljs-number">8889</span>,<span class="hljs-number">39001</span>]:<br>    <span class="hljs-keyword">try</span>:<br>        <span class="hljs-keyword">if</span> connect_scan(<span class="hljs-string">&quot;121.40.34.51&quot;</span>, i):<br>            <span class="hljs-built_in">print</span>(<span class="hljs-string">f&quot;<span class="hljs-subst">&#123;i&#125;</span> 开放&quot;</span>)<br>        <span class="hljs-keyword">else</span>:<br>            <span class="hljs-built_in">print</span>(<span class="hljs-string">f&quot;<span class="hljs-subst">&#123;i&#125;</span> 关闭&quot;</span>)<br>    <span class="hljs-keyword">except</span> RuntimeError <span class="hljs-keyword">as</span> e:<br>        <span class="hljs-built_in">print</span>(e)<br></code></pre></td></tr></table></figure>
+
+<p>注意到，连接扫描特征：</p>
+<blockquote>
+<p>多次尝试连接不同的端口，连接建立后不发送任何数据就终止（RST或FIN）</p>
+</blockquote>
+<p>以下规则检测刚建立连接就立即断开的异常流量</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><code class="hljs shell">CNSCAN=406;<br>VALID=408;<br><br>-N mark_cnscan;<br>-A mark_cnscan -j CONNMARK --set-mark $CNSCAN;<br><br>-N tcp_new3;<br>-A tcp_new3 -p tcp --tcp-flags SYN,FIN,RST RST -g mark_cnscan;<br>-A tcp_new3 -p tcp --tcp-flags SYN,FIN,RST FIN -g mark_cnscan;<br>-A tcp_new3 -j CONNMARK --set-mark $VALID;<br><br>-A INPUT -m connmark --mark $ESTAB -j tcp_new3;<br></code></pre></td></tr></table></figure>
+
+<h2 id="Grab扫描"><a href="#Grab扫描" class="headerlink" title="Grab扫描"></a>Grab扫描</h2><p>Grab扫描不仅检测端口是否开放，还会获取服务器返回的Banner信息以判断出服务器上运行的服务及其版本</p>
+<p>连接建立后服务器返回Banner信息，客户端响应Banner的ACK后就断开连接</p>
+<p>以下规则检测建立连接后发送一个ACK包就断开的异常流量</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><code class="hljs shell">-N tcp_new4;<br>-A tcp_new4 -p tcp --tcp-flags SYN,FIN,RST,ACK ACK<br>-m length --length 52 -j RETURN;<br>-A tcp_new4 -p tcp --tcp-flags SYN,FIN,RST RST -g mark_grscan;<br>-A tcp_new4 -p tcp --tcp-flags SYN,FIN,RST FIN -g mark_grscan;<br>-A tcp_new4 -j CONNMARK --set-mark $VALID;<br></code></pre></td></tr></table></figure>
+
+<h1 id="真正的”暴力检测”"><a href="#真正的”暴力检测”" class="headerlink" title="真正的”暴力检测”"></a>真正的”暴力检测”</h1><p>依我看，要检测端口扫描哪有那么复杂，我连完整的连接都不跟踪了，那样只会复杂化算法，直接暴力判断某个IP是否多次发送不同目标端口的数据包就行</p>
+<p>简单有效易维护，符合KISS原则（喜</p>
+<p>正常一个网站阈值为4非常合理，普通用户最多访问80和443两个端口（笑</p>
+<p>nmap扫一下，后台哐哐报</p>
+<p><img src="/articles/antiscan/5.png" srcset="/img/loading.gif" lazyload></p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><code class="hljs python"><span class="hljs-keyword">from</span> scapy.<span class="hljs-built_in">all</span> <span class="hljs-keyword">import</span> *<br><span class="hljs-keyword">import</span> ipaddress<br><br>PORT_SCAN_THRESHOLD = <span class="hljs-number">4</span><br>record = &#123;&#125;<br><span class="hljs-keyword">def</span> <span class="hljs-title function_">packet_callback</span>(<span class="hljs-params">packet</span>):<br>    <span class="hljs-keyword">if</span> packet.haslayer(IP) <span class="hljs-keyword">and</span> packet.haslayer(TCP):<br>        src_ip = packet[IP].src<br>        dst_port = packet[TCP].dport<br><br>        <span class="hljs-keyword">if</span> ipaddress.IPv4Address(src_ip).is_global:<br>            <span class="hljs-keyword">if</span> src_ip <span class="hljs-keyword">not</span> <span class="hljs-keyword">in</span> record:<br>                record[src_ip] = []<br><br>            <span class="hljs-keyword">if</span> dst_port <span class="hljs-keyword">not</span> <span class="hljs-keyword">in</span> record[src_ip]:<br>                record[src_ip].append(dst_port)<br><br>            <span class="hljs-keyword">if</span> <span class="hljs-built_in">len</span>(record[src_ip]) &gt;= PORT_SCAN_THRESHOLD:<br>                <span class="hljs-built_in">print</span>(<span class="hljs-string">f&quot;<span class="hljs-subst">&#123;src_ip&#125;</span> 尝试端口扫描（IP可伪造仅供参考）&quot;</span>)<br>                <span class="hljs-keyword">del</span> record[src_ip]<br><br>sniff(iface=<span class="hljs-string">&quot;eth0&quot;</span>, prn=packet_callback, <span class="hljs-built_in">filter</span>=<span class="hljs-string">&quot;tcp&quot;</span>)<br></code></pre></td></tr></table></figure>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+    <div class="post-meta mr-3 d-flex align-items-center">
+      <i class="iconfont icon-category"></i>
+      
+
+<span class="category-chains">
+  
+  
+    
+      <span class="category-chain">
+        
+  <a href="/categories/%E8%AE%BA%E6%96%87%E7%A0%94%E8%AF%BB/" class="category-chain-item">论文研读</a>
+  
+  
+
+      </span>
+    
+  
+</span>
+
+    </div>
+  
+  
+    <div class="post-meta">
+      <i class="iconfont icon-tags"></i>
+      
+        <a href="/tags/%E7%BC%96%E7%A8%8B/" class="print-no-link">#编程</a>
+      
+        <a href="/tags/%E7%BD%91%E7%BB%9C%E5%AE%89%E5%85%A8/" class="print-no-link">#网络安全</a>
+      
+        <a href="/tags/%E7%BD%91%E7%BB%9C%E5%B7%A5%E7%A8%8B/" class="print-no-link">#网络工程</a>
+      
+    </div>
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>论文研读《Detecting and deceiving network scans》</div>
+      <div>https://crackme.net/articles/antiscan/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>Brassinolide</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2025年2月11日</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by-nc-sa/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-cc-by"></i>
+                  </span>
+                </a>
+              
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by-nc-sa/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="NC - 非商业性使用">
+                    <i class="iconfont icon-cc-nc"></i>
+                  </span>
+                </a>
+              
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by-nc-sa/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="SA - 相同方式共享">
+                    <i class="iconfont icon-cc-sa"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/articles/rtcleak/" title="详解WebRTC泄露">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">详解WebRTC泄露</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/articles/bypass_icp/" title="国内服务器如何免备案">
+                        <span class="hidden-mobile">国内服务器如何免备案</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+  
+  
+    <article id="comments" lazyload>
+      
+  <script type="text/javascript">
+    Fluid.utils.loadComments('#comments', function() {
+      var light = 'github-light';
+      var dark = 'github-dark';
+      var schema = document.documentElement.getAttribute('data-user-color-scheme');
+      if (schema === 'dark') {
+        schema = dark;
+      } else {
+        schema = light;
+      }
+      window.UtterancesThemeLight = light;
+      window.UtterancesThemeDark = dark;
+      var s = document.createElement('script');
+      s.setAttribute('src', 'https://utteranc.es/client.js');
+      s.setAttribute('repo', 'Brassinolide/Brassinolide.github.io');
+      s.setAttribute('issue-term', 'pathname');
+      
+      s.setAttribute('label', 'utterances');
+      
+      s.setAttribute('theme', schema);
+      s.setAttribute('crossorigin', 'anonymous');
+      document.getElementById('comments').appendChild(s);
+    })
+  </script>
+  <noscript>Please enable JavaScript to view the comments</noscript>
+
+
+    </article>
+  
+
+
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+  
+  
+
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       框架 <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> | 主题 <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> <div style="font-size: 0.85rem"> <span id="timeDate">载入天数...</span> <span id="times">载入时分秒...</span> <script src="/js/duration.js"></script> </div> 
+    </div>
+  
+  
+    <div class="statistics">
+  
+  
+
+  
+    
+      <span id="busuanzi_container_site_pv" style="display: none">
+        总访问量 
+        <span id="busuanzi_value_site_pv"></span>
+         次
+      </span>
+    
+    
+      <span id="busuanzi_container_site_uv" style="display: none">
+        总访客数 
+        <span id="busuanzi_value_site_uv"></span>
+         人
+      </span>
+    
+    
+
+  
+
+</div>
+
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":true,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.4/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  var relativeDate = function() {
+    var updatedTime = document.getElementById('updated-time');
+    if (updatedTime) {
+      var text = updatedTime.textContent;
+      var reg = /\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:Z|[+-]\d{2}:\d{2})/;
+      var matchs = text.match(reg);
+      if (matchs) {
+        var relativeTime = moment(matchs[0]).fromNow();
+        updatedTime.textContent = text.replace(reg, relativeTime);
+      }
+      updatedTime.style.display = '';
+    }
+  };
+  Fluid.utils.createScript('https://lib.baomitu.com/moment.js/2.29.4/moment.min.js', function() {
+    if (!'zh-cn'.startsWith('en')) {
+      Fluid.utils.createScript('https://lib.baomitu.com/moment.js/2.29.4/locale/zh-cn.min.js', function() {
+        relativeDate();
+      });
+    } else {
+      relativeDate();
+    }
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.20.1/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/5.0.0/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script  src="/js/local-search.js" ></script>
+
+  <script defer src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js" ></script>
+
+
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>
