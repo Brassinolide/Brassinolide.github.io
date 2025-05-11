@@ -4,6 +4,27 @@
   
   
   <entry>
+    <title>深入解析Visual Studio反序列化零点击代码执行漏洞，实现 100% 稳定复现</title>
+    <link href="/articles/vs_exploit_research/"/>
+    <url>/articles/vs_exploit_research/</url>
+    
+    <content type="html"><![CDATA[<p>我在过去写过一篇文章（<a href="https://crackme.net/articles/resln/">https://crackme.net/articles/resln/</a> ），介绍了这个反序列化代码执行漏洞，但是懒没有深入研究，也不知道为什么不是所有项目类型都生效</p><p>今天有人来问我这个问题，只能静下心深入研究一下</p><h1 id="正文"><a href="#正文" class="headerlink" title="正文"></a>正文</h1><p>随便试几下就能发现，从最近项目中打开是能稳定利用的，但是从sln打开就分项目类型，部分项目类型不生效，部分项目类型需要用户二次操作（例如打开项目属性）</p><p><img src="/articles/vs_exploit_research/3.png"></p><p>已知漏洞存在于<code>Microsoft.VisualStudio.dll</code>中，搜索可知该dll被<code>devenv.exe</code>加载</p><p><img src="/articles/vs_exploit_research/1.png"></p><p>使用dnspy打开<code>Microsoft.VisualStudio.dll</code>，在有漏洞的位置加个断点，附加到<code>devenv.exe</code>开始调试</p><p><img src="/articles/vs_exploit_research/2.png"></p><figure class="highlight c#"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><code class="hljs C#"><span class="hljs-comment">// Token: 0x06000289 RID: 649 RVA: 0x0000B23C File Offset: 0x0000943C</span><br><span class="hljs-function"><span class="hljs-keyword">internal</span> <span class="hljs-keyword">void</span> <span class="hljs-title">LoadOptions</span>(<span class="hljs-params">Stream stream</span>)</span><br>&#123;<br><span class="hljs-comment">// BinaryFormatter 反序列化漏洞点，在这里加个断点开始调试</span><br>BinaryReader binaryReader = <span class="hljs-keyword">new</span> BinaryReader(stream);<br>BinaryFormatter binaryFormatter = <span class="hljs-keyword">new</span> BinaryFormatter();<br><span class="hljs-built_in">int</span> num = binaryReader.ReadInt32();<br><span class="hljs-keyword">for</span> (<span class="hljs-built_in">int</span> i = <span class="hljs-number">0</span>; i &lt; num; i++)<br>&#123;<br><span class="hljs-built_in">string</span> text = binaryReader.ReadString();<br><span class="hljs-built_in">int</span> num2 = binaryReader.ReadInt32();<br><span class="hljs-keyword">for</span> (<span class="hljs-built_in">int</span> j = <span class="hljs-number">0</span>; j &lt; num2; j++)<br>&#123;<br><span class="hljs-built_in">string</span> text2 = <span class="hljs-keyword">this</span>.Links.Read(stream);<br>VsToolboxService.ToolboxItemContainer toolboxItemContainer = (VsToolboxService.ToolboxItemContainer)binaryFormatter.Deserialize(stream);<br><span class="hljs-keyword">if</span> (text2 != <span class="hljs-literal">null</span> &amp;&amp; File.Exists(text2))<br>&#123;<br>toolboxItemContainer.LinkFile = text2;<br><span class="hljs-keyword">this</span>.Links.TrackLink(text2);<br><span class="hljs-keyword">this</span>.Items.GetFilteredList(text).Add(toolboxItemContainer);<br>&#125;<br>&#125;<br>&#125;<br>&#125;<br></code></pre></td></tr></table></figure><p>跟随调用栈来到<code>Microsoft.VisualStudio.Shell.15.0.dll!Initialize()</code></p><figure class="highlight c#"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br></pre></td><td class="code"><pre><code class="hljs C#"><span class="hljs-comment">// Token: 0x060021AA RID: 8618 RVA: 0x000545E8 File Offset: 0x000527E8</span><br><span class="hljs-function"><span class="hljs-keyword">protected</span> <span class="hljs-keyword">virtual</span> <span class="hljs-keyword">void</span> <span class="hljs-title">Initialize</span>()</span><br>&#123;<br><span class="hljs-built_in">object</span> servicesLock = <span class="hljs-keyword">this</span>._servicesLock;<br><span class="hljs-keyword">lock</span> (servicesLock)<br>&#123;<br><span class="hljs-keyword">if</span> (<span class="hljs-keyword">this</span>._services != <span class="hljs-literal">null</span> &amp;&amp; <span class="hljs-keyword">this</span>._services.Count &gt; <span class="hljs-number">0</span>)<br>&#123;<br>IProfferService profferService = <span class="hljs-literal">null</span>;<br><span class="hljs-keyword">foreach</span> (KeyValuePair&lt;Type, <span class="hljs-built_in">object</span>&gt; keyValuePair <span class="hljs-keyword">in</span> <span class="hljs-keyword">this</span>._services)<br>&#123;<br>Package.ProfferedService profferedService = keyValuePair.Value <span class="hljs-keyword">as</span> Package.ProfferedService;<br><span class="hljs-keyword">if</span> (profferedService != <span class="hljs-literal">null</span>)<br>&#123;<br><span class="hljs-keyword">if</span> (profferService == <span class="hljs-literal">null</span>)<br>&#123;<br>profferService = (IProfferService)<span class="hljs-keyword">this</span>.GetService(<span class="hljs-keyword">typeof</span>(SProfferService));<br>&#125;<br><span class="hljs-keyword">if</span> (profferService == <span class="hljs-literal">null</span>)<br>&#123;<br><span class="hljs-keyword">break</span>;<br>&#125;<br>Guid guid = keyValuePair.Key.GUID;<br><span class="hljs-built_in">uint</span> num;<br>NativeMethods.ThrowOnFailure(profferService.ProfferService(<span class="hljs-keyword">ref</span> guid, <span class="hljs-keyword">this</span>, <span class="hljs-keyword">out</span> num));<br>profferedService.Cookie = num;<br>&#125;<br>&#125;<br>&#125;<br>&#125;<br><br><span class="hljs-comment">// 上面的代码不重要，从这里开始判断</span><br><span class="hljs-built_in">object</span> optionKeysLock = <span class="hljs-keyword">this</span>._optionKeysLock;<br><span class="hljs-built_in">string</span>[] array;<br><span class="hljs-keyword">lock</span> (optionKeysLock)<br>&#123;<br>List&lt;<span class="hljs-built_in">string</span>&gt; optionKeys = <span class="hljs-keyword">this</span>._optionKeys;<br>array = ((optionKeys != <span class="hljs-literal">null</span>) ? optionKeys.ToArray() : <span class="hljs-literal">null</span>);<br>&#125;<br><span class="hljs-keyword">if</span> (array != <span class="hljs-literal">null</span>)<br>&#123;<br>IVsSolutionPersistence vsSolutionPersistence = (IVsSolutionPersistence)<span class="hljs-keyword">this</span>.GetService(<span class="hljs-keyword">typeof</span>(SVsSolutionPersistence));<br><span class="hljs-keyword">if</span> (vsSolutionPersistence != <span class="hljs-literal">null</span>)<br>&#123;<br><span class="hljs-keyword">foreach</span> (<span class="hljs-built_in">string</span> text <span class="hljs-keyword">in</span> array)<br>&#123;<br><span class="hljs-keyword">try</span><br>&#123;<br><span class="hljs-comment">// text参数是否为&quot;VsToolboxService&quot;就是漏洞能否利用的关键</span><br><span class="hljs-built_in">int</span> num2 = vsSolutionPersistence.LoadPackageUserOpts(<span class="hljs-keyword">this</span>, text);<br><span class="hljs-keyword">if</span> (num2 == <span class="hljs-number">-2147418113</span> || num2 == <span class="hljs-number">-2147287038</span> || num2 == <span class="hljs-number">-2147467260</span>)<br>&#123;<br><span class="hljs-keyword">break</span>;<br>&#125;<br>ErrorHandler.ThrowOnFailure(num2);<br>&#125;<br><span class="hljs-keyword">catch</span> (Exception ex)<br>&#123;<br><span class="hljs-keyword">this</span>.LogSolutionOptionsLoadFailure(text, ex);<br>&#125;<br>&#125;<br>&#125;<br>&#125;<br><span class="hljs-keyword">this</span>.ScheduleToolboxItemDiscoveryFactoriesRegistrationIfNecessary();<br>&#125;<br></code></pre></td></tr></table></figure><p>可以推测出，从最近项目中打开项目时自动设置了<code>_optionKeys;</code>为<code>VsToolboxService</code>，原理明白了接下来跟调用栈看看哪里设置了<code>_optionKeys;</code>就行</p><p>在<code>_optionKeys</code>的setter方法上打个断点，继续跟调用栈看哪个设置了<code>VsToolboxService</code></p><figure class="highlight c#"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br></pre></td><td class="code"><pre><code class="hljs C#"><span class="hljs-comment">// Token: 0x0600219E RID: 8606 RVA: 0x00053A8C File Offset: 0x00051C8C</span><br><span class="hljs-function"><span class="hljs-keyword">protected</span> <span class="hljs-keyword">void</span> <span class="hljs-title">AddOptionKey</span>(<span class="hljs-params"><span class="hljs-built_in">string</span> name</span>)</span><br>&#123;<br><span class="hljs-keyword">if</span> (<span class="hljs-keyword">this</span>.zombie)<br>&#123;<br>Marshal.ThrowExceptionForHR(<span class="hljs-number">-2147418113</span>);<br>&#125;<br><span class="hljs-keyword">if</span> (name == <span class="hljs-literal">null</span>)<br>&#123;<br><span class="hljs-keyword">throw</span> <span class="hljs-keyword">new</span> ArgumentNullException(<span class="hljs-string">&quot;name&quot;</span>);<br>&#125;<br><span class="hljs-keyword">if</span> (name.Length &gt; <span class="hljs-number">31</span>)<br>&#123;<br><span class="hljs-keyword">throw</span> <span class="hljs-keyword">new</span> ArgumentException(<span class="hljs-built_in">string</span>.Format(Resources.Culture, Resources.Package_BadOptionName, name));<br>&#125;<br><span class="hljs-built_in">object</span> optionKeysLock = <span class="hljs-keyword">this</span>._optionKeysLock;<br><span class="hljs-keyword">lock</span> (optionKeysLock)<br>&#123;<br><span class="hljs-keyword">if</span> (<span class="hljs-keyword">this</span>._optionKeys == <span class="hljs-literal">null</span>)<br>&#123;<br><span class="hljs-keyword">this</span>._optionKeys = <span class="hljs-keyword">new</span> List&lt;<span class="hljs-built_in">string</span>&gt;();<br>&#125;<br><span class="hljs-keyword">if</span> (<span class="hljs-keyword">this</span>._optionKeys.Contains(name))<br>&#123;<br><span class="hljs-keyword">throw</span> <span class="hljs-keyword">new</span> ArgumentException(<span class="hljs-built_in">string</span>.Format(Resources.Culture, Resources.Package_OptionNameUsed, name));<br>&#125;<br><br><span class="hljs-comment">// 在这里加断点</span><br><span class="hljs-keyword">this</span>._optionKeys.Add(name);<br>&#125;<br>&#125;<br></code></pre></td></tr></table></figure><p>最终跟到<code>VSCorePackage</code>，<code>VSCorePackage</code>中没有判断就直接执行了<code>base.AddOptionKey(typeof(VsToolboxService).Name);</code>，很明显，该漏洞能否零点击利用的关键就是<code>VSCorePackage()</code>是否会被零点击调用</p><figure class="highlight c#"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><code class="hljs C#"><span class="hljs-comment">// Token: 0x06000106 RID: 262 RVA: 0x00003B10 File Offset: 0x00001D10</span><br><span class="hljs-function"><span class="hljs-keyword">public</span> <span class="hljs-title">VSCorePackage</span>()</span><br>&#123;<br>ServiceCreatorCallback serviceCreatorCallback = <span class="hljs-keyword">new</span> ServiceCreatorCallback(<span class="hljs-keyword">this</span>.OnCreateService);<br>IServiceContainer serviceContainer = <span class="hljs-keyword">this</span>.GetService(<span class="hljs-keyword">typeof</span>(IServiceContainer)) <span class="hljs-keyword">as</span> IServiceContainer;<br><span class="hljs-keyword">if</span> (serviceContainer != <span class="hljs-literal">null</span>)<br>&#123;<br>serviceContainer.AddService(<span class="hljs-keyword">typeof</span>(IVSMDPropertyBrowser), serviceCreatorCallback, <span class="hljs-literal">true</span>);<br>serviceContainer.AddService(<span class="hljs-keyword">typeof</span>(IToolboxService), serviceCreatorCallback, <span class="hljs-literal">true</span>);<br>serviceContainer.AddService(<span class="hljs-keyword">typeof</span>(IComponentDiscoveryService), serviceCreatorCallback, <span class="hljs-literal">true</span>);<br>serviceContainer.AddService(<span class="hljs-keyword">typeof</span>(IUIService), serviceCreatorCallback, <span class="hljs-literal">true</span>);<br>serviceContainer.AddService(<span class="hljs-keyword">typeof</span>(AssemblyEnumerationService), serviceCreatorCallback);<br>&#125;<br><span class="hljs-comment">// 注意这里</span><br><span class="hljs-keyword">base</span>.AddOptionKey(<span class="hljs-keyword">typeof</span>(VsToolboxService).Name);<br>VSCorePackage._instance = <span class="hljs-keyword">this</span>;<br>&#125;<br></code></pre></td></tr></table></figure><p>继续跟调用栈，<code>mscorlib.dll</code>是.net运行时的内部组件不用看，主要看vs的业务组件</p><p><img src="/articles/vs_exploit_research/4.png"></p><p>从调用栈的<code>lazy</code> <code>load</code> <code>async</code>等关键词可以猜出来，大概是开发者为了优化程序性能，使用了延迟加载机制，只有在需要时才加载对应组件，这也就解释了为什么部分项目需要用户二次操作才能利用（所以<strong>并不是微软修复了这个漏洞，仅仅是优化机制阻碍了零点击利用</strong>）</p><p>接下来重点就看看有没有什么方法能够绕过这个延迟加载机制</p><p>已知.net窗体应用可以零点击利用，调试发现是窗体设计组件<code>System.Design.dll</code>自动调用了<code>VSCorePackage</code>（前提是<strong>窗体设计窗口要放到前台再保存关闭项目</strong>，这样用户打开项目时就会自动进入窗体设计窗口并加载<code>System.Design.dll</code>）</p><p>问题差不多解决了，然后找零点击利用链就行</p><p>很明显，一条目前已知的利用链</p><blockquote><p><strong>.net窗体设计器 -&gt; <code>System.Design.dll</code> -&gt; <code>VSCorePackage</code></strong></p></blockquote><p>但是用户不一定安装了.net开发环境，最好再找一条更通用的利用链</p><p>不需要审计代码，代码量太大审计起来太头疼，直接创建一个项目，把可能存在利用链的功能用上，判断是否能零点击利用成功最终调试定位到利用链</p><p>这里作为演示，我猜测vs的「类视图解析」功能可能存在利用链，所以创建一个C++项目，编写一个简单的代码</p><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs C++"><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;iostream&gt;</span></span><br><br><span class="hljs-function"><span class="hljs-type">int</span> <span class="hljs-title">main</span><span class="hljs-params">()</span> </span>&#123;<br>std::cout &lt;&lt; <span class="hljs-string">&quot;hello world&quot;</span>;<br>&#125;<br></code></pre></td></tr></table></figure><p><img src="/articles/vs_exploit_research/5.png"></p><p>保持「类视图解析」在前台，保存退出项目，在suo文件插入payload，打开，发现零点击利用成功</p><p><img src="/articles/vs_exploit_research/6.png"></p><p>调试分析代码可知，发现漏洞并不是出现在「类视图解析」功能上，而是窗口聚焦功能，因为我把「类视图解析」聚焦到了前台，用户打开就会自动聚焦到「类视图解析」上导致漏洞被零点击激活</p><figure class="highlight c#"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br></pre></td><td class="code"><pre><code class="hljs C#"><span class="hljs-comment">// Token: 0x060006BF RID: 1727 RVA: 0x0001DFF0 File Offset: 0x0001C1F0</span><br><span class="hljs-function"><span class="hljs-keyword">internal</span> <span class="hljs-keyword">override</span> <span class="hljs-built_in">bool</span> <span class="hljs-title">OnQuerySwitchPane</span>(<span class="hljs-params">FrameMoniker frameMoniker</span>)</span><br>&#123;<br>WindowFrame windowFrame = <span class="hljs-keyword">base</span>.FindFrame(frameMoniker);<br><span class="hljs-keyword">if</span> (windowFrame != <span class="hljs-literal">null</span>)<br>&#123;<br><span class="hljs-keyword">return</span> <span class="hljs-literal">true</span>;<br>&#125;<br>Guid toolWindowGuid = frameMoniker.ToolWindowGuid;<br><span class="hljs-keyword">if</span> (toolWindowGuid != Guid.Empty)<br>&#123;<br>Guid guid = <span class="hljs-keyword">typeof</span>(IVsWindowPane).GUID;<br>IntPtr zero = IntPtr.Zero;<br>ErrorHandler.ThrowOnFailure(GlobalServices.ServiceProvider.QueryService(<span class="hljs-keyword">ref</span> toolWindowGuid, <span class="hljs-keyword">ref</span> guid, <span class="hljs-keyword">out</span> zero));<br><span class="hljs-keyword">using</span> (SafeIUnknown safeIUnknown = <span class="hljs-keyword">new</span> SafeIUnknown(zero))<br>&#123;<br>IVsWindowPane vsWindowPane = safeIUnknown.ToObject() <span class="hljs-keyword">as</span> IVsWindowPane;<br><span class="hljs-keyword">if</span> (vsWindowPane != <span class="hljs-literal">null</span>)<br>&#123;<br>windowFrame = WindowFrame.CreateInstance(frameMoniker);<br>windowFrame.DocumentSite = <span class="hljs-keyword">new</span> DocumentObjectSite(windowFrame, <span class="hljs-literal">null</span>, <span class="hljs-literal">null</span>, <span class="hljs-literal">null</span>, <span class="hljs-built_in">uint</span>.MaxValue);<br>windowFrame.DocumentSite.InitializeDocumentObject(vsWindowPane);<br>windowFrame.SetProperty(<span class="hljs-number">-3004</span>, <span class="hljs-keyword">base</span>.Caption);<br><span class="hljs-keyword">base</span>.AddFrame(windowFrame);<br><span class="hljs-keyword">return</span> <span class="hljs-literal">true</span>;<br>&#125;<br>&#125;<br><span class="hljs-keyword">return</span> <span class="hljs-literal">false</span>;<br>&#125;<br><span class="hljs-keyword">return</span> <span class="hljs-literal">false</span>;<br>&#125;<br></code></pre></td></tr></table></figure><p>所以利用链就是</p><blockquote><p><strong>窗口聚焦 -&gt; <code>Microsoft.VisualStudio.Platform.WindowManagement.dll</code> -&gt; <code>VSCorePackage</code></strong></p></blockquote><p>创建一个空项目，随便选一个窗口聚焦（这里用git更改窗口），保存退出项目，在suo文件插入payload，打开，零点击利用成功，更加证实了这个利用链</p><p><img src="/articles/vs_exploit_research/7.png"></p><p>同理，这里必然还存在非常多的利用链，但是我懒得挖了，这两条零点击已经非常厉害了（够用就行，笑）</p>]]></content>
+    
+    
+    
+    <tags>
+      
+      <tag>网络安全</tag>
+      
+      <tag>逆向工程</tag>
+      
+    </tags>
+    
+  </entry>
+  
+  
+  
+  <entry>
     <title>xss-labs 靶场零点击攻略</title>
     <link href="/articles/xss_labs_0click/"/>
     <url>/articles/xss_labs_0click/</url>
@@ -79,9 +100,9 @@
     
     <tags>
       
-      <tag>编程</tag>
-      
       <tag>网络安全</tag>
+      
+      <tag>编程</tag>
       
       <tag>RFC3161</tag>
       
@@ -123,9 +144,9 @@
     
     <tags>
       
-      <tag>编程</tag>
-      
       <tag>网络安全</tag>
+      
+      <tag>编程</tag>
       
     </tags>
     
@@ -150,9 +171,9 @@
     
     <tags>
       
-      <tag>编程</tag>
-      
       <tag>网络安全</tag>
+      
+      <tag>编程</tag>
       
       <tag>网络工程</tag>
       
@@ -246,9 +267,9 @@
     
     <tags>
       
-      <tag>编程</tag>
-      
       <tag>网络安全</tag>
+      
+      <tag>编程</tag>
       
     </tags>
     
@@ -267,9 +288,9 @@
     
     <tags>
       
-      <tag>编程</tag>
-      
       <tag>网络安全</tag>
+      
+      <tag>编程</tag>
       
       <tag>考研408</tag>
       
@@ -292,9 +313,9 @@
     
     <tags>
       
-      <tag>编程</tag>
-      
       <tag>网络安全</tag>
+      
+      <tag>编程</tag>
       
       <tag>密码学</tag>
       
@@ -315,9 +336,9 @@
     
     <tags>
       
-      <tag>编程</tag>
-      
       <tag>网络安全</tag>
+      
+      <tag>编程</tag>
       
     </tags>
     
@@ -336,9 +357,9 @@
     
     <tags>
       
-      <tag>编程</tag>
-      
       <tag>网络安全</tag>
+      
+      <tag>编程</tag>
       
     </tags>
     
@@ -357,9 +378,9 @@
     
     <tags>
       
-      <tag>编程</tag>
-      
       <tag>网络安全</tag>
+      
+      <tag>编程</tag>
       
       <tag>密码学</tag>
       
@@ -399,9 +420,9 @@
     
     <tags>
       
-      <tag>编程</tag>
-      
       <tag>网络安全</tag>
+      
+      <tag>编程</tag>
       
       <tag>windows</tag>
       
@@ -510,9 +531,9 @@
     
     <tags>
       
-      <tag>编程</tag>
-      
       <tag>网络安全</tag>
+      
+      <tag>编程</tag>
       
       <tag>Github</tag>
       
@@ -533,9 +554,9 @@
     
     <tags>
       
-      <tag>编程</tag>
-      
       <tag>网络安全</tag>
+      
+      <tag>编程</tag>
       
     </tags>
     
@@ -554,9 +575,9 @@
     
     <tags>
       
-      <tag>编程</tag>
-      
       <tag>网络安全</tag>
+      
+      <tag>编程</tag>
       
       <tag>Windows</tag>
       
@@ -638,9 +659,9 @@
     
     <tags>
       
-      <tag>编程</tag>
-      
       <tag>网络安全</tag>
+      
+      <tag>编程</tag>
       
       <tag>Windows</tag>
       
@@ -661,9 +682,9 @@
     
     <tags>
       
-      <tag>编程</tag>
-      
       <tag>网络安全</tag>
+      
+      <tag>编程</tag>
       
       <tag>Windows</tag>
       
