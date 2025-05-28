@@ -1,0 +1,842 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/035b682805d10e4c77772bc6e936d08605d23c86.png">
+  <link rel="icon" href="/img/035b682805d10e4c77772bc6e936d08605d23c86.png">
+  
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+    <meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="Brassinolide">
+  <meta name="keywords" content="博客,计算机,编程,逆向工程,web安全,网络安全,技术文章,安全研究,ctf,python,c/c++">
+  
+    <meta name="description" content="使用自签名证书用于ssl通信，解决chrome浏览器中的不安全访问">
+<meta property="og:type" content="article">
+<meta property="og:title" content="使用自签名证书用于ssl通信">
+<meta property="og:url" content="https://crackme.net/articles/selfsigning/index.html">
+<meta property="og:site_name" content="CrackMe.net">
+<meta property="og:description" content="使用自签名证书用于ssl通信，解决chrome浏览器中的不安全访问">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://crackme.net/articles/selfsigning/1.png">
+<meta property="og:image" content="https://crackme.net/articles/selfsigning/2.png">
+<meta property="og:image" content="https://crackme.net/articles/selfsigning/3.png">
+<meta property="og:image" content="https://crackme.net/articles/selfsigning/4.png">
+<meta property="article:published_time" content="2025-01-04T02:34:18.000Z">
+<meta property="article:modified_time" content="2025-01-04T03:25:31.989Z">
+<meta property="article:author" content="Brassinolide">
+<meta property="article:tag" content="编程">
+<meta property="article:tag" content="网络安全">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://crackme.net/articles/selfsigning/1.png">
+  
+  
+    <meta name="referrer" content="no-referrer-when-downgrade">
+  
+  
+  <title>使用自签名证书用于ssl通信 | CrackMe.net</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/KaTeX/0.16.2/katex.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1749284_5i9bdhy70f8.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1736178_k526ubmyhba.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+  
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_4819174_gp0ncad5v26.css">
+<link rel="stylesheet" href="/css/hexo-math-style.css">
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"crackme.net","root":"/","version":"1.9.8","typing":{"enable":false,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":true,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":false,"follow_dnt":true,"baidu":null,"google":{"measurement_id":null},"tencent":{"sid":null,"cid":null},"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false},"umami":{"src":null,"website_id":null,"domains":null,"start_time":"2024-01-01T00:00:00.000Z","token":null,"api_server":null}},"search_path":"/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+
+  
+<!-- hexo injector head_end start -->
+<link rel="stylesheet" href="/./css/hexo-math-style.css">
+<!-- hexo injector head_end end --><meta name="generator" content="Hexo 7.3.0"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 40vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>CrackMe.net</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/" target="_self">
+                <i class="iconfont icon-home-fill"></i>
+                <span>首页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/weixin/" target="_self">
+                <i class="iconfont icon-wechat-fill"></i>
+                <span>公众号</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/" target="_self">
+                <i class="iconfont icon-archive-fill"></i>
+                <span>归档</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/" target="_self">
+                <i class="iconfont icon-category-fill"></i>
+                <span>分类</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/" target="_self">
+                <i class="iconfont icon-tags-fill"></i>
+                <span>标签</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/" target="_self">
+                <i class="iconfont icon-user-fill"></i>
+                <span>关于</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/links/" target="_self">
+                <i class="iconfont icon-link-fill"></i>
+                <span>友链</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tools/" target="_self">
+                <i class="iconfont icon-briefcase"></i>
+                <span>在线工具</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="https://www.travellings.cn/go.html" target="_self">
+                <i class="iconfont icon-subway"></i>
+                <span>开往</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" false
+     style="background: url('/img/default.jpg') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle">使用自签名证书用于ssl通信</span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2025-01-04 10:34" pubdate>
+          2025年1月4日 上午
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          644 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          6 分钟
+        
+      </span>
+    
+
+    
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header">使用自签名证书用于ssl通信</h1>
+            
+              <p id="updated-time" class="note note-info" style="display: none">
+                
+                  
+                    本文最后更新于 2025-01-04T11:25:31+08:00
+                  
+                  
+
+                
+              </p>
+            
+            
+              <div class="markdown-body">
+                
+                <p>本文章所有代码都打包了，下载地址：<a href="selfsigning.rar">selfsigning.rar</a></p>
+<h1 id="签发根证书"><a href="#签发根证书" class="headerlink" title="签发根证书"></a>签发根证书</h1><p>创建配置文件<code>root.cnf</code>，内容如下</p>
+<figure class="highlight ini"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs ini"><span class="hljs-section">[ req ]</span><br><span class="hljs-attr">x509_extensions</span> = root_ca<br><br><span class="hljs-section">[ root_ca ]</span><br><span class="hljs-attr">basicConstraints</span> = critical, CA:<span class="hljs-literal">true</span><br></code></pre></td></tr></table></figure>
+
+<p>签发根证书</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs shell">openssl req -x509 -newkey rsa:2048 -out root.cer -outform PEM -keyout root.pvk -days 10000 -verbose -config root.cnf -nodes -sha256 -subj &quot;/CN=OpenTrust Root&quot;<br></code></pre></td></tr></table></figure>
+
+<p><code>OpenTrust</code>是我们虚构的一个公司，这样比较正式一点吧（笑</p>
+<p>生成的<code>root.cer</code>是公钥，<code>root.pvk</code>是私钥，然后把<code>root.cer</code>导入到用户的<code>受信任的根证书颁发机构</code>里</p>
+<p><img src="/articles/selfsigning/1.png" srcset="/img/loading.gif" lazyload></p>
+<h1 id="签发ssl证书"><a href="#签发ssl证书" class="headerlink" title="签发ssl证书"></a>签发ssl证书</h1><p>创建配置文件<code>serverAuth.ext</code>，内容如下</p>
+<p>域名或IP地址根据需要修改</p>
+<figure class="highlight ini"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><code class="hljs ini"><span class="hljs-attr">subjectAltName</span> = @server<br><span class="hljs-attr">extendedKeyUsage</span> = serverAuth<br><br><span class="hljs-section">[server]</span><br><span class="hljs-comment"># 域名（多个域名就DNS.2、DNS.3类推，IP下同）</span><br><span class="hljs-attr">DNS.1</span> = localhost<br><span class="hljs-comment"># IP地址（v4或v6）</span><br><span class="hljs-attr">IP.1</span> = <span class="hljs-number">192.168</span>.<span class="hljs-number">117.122</span><br><span class="hljs-attr">IP.2</span> = fe80::<span class="hljs-number">9</span>fec:b699:<span class="hljs-number">19</span>fb:<span class="hljs-number">850</span>e<br></code></pre></td></tr></table></figure>
+
+<p>然后创建签名请求文件<code>serverAuth.req</code>并签名</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs shell"><span class="hljs-meta prompt_">#</span><span class="language-bash">创建签名请求</span><br>openssl req -newkey rsa:2048 -keyout serverAuth.pvk -out serverAuth.req -subj /CN=&quot;OpenTrust ServerAuth&quot; -sha256 -nodes<br><span class="hljs-meta prompt_"></span><br><span class="hljs-meta prompt_">#</span><span class="language-bash">签名</span><br>openssl x509 -req -CA root.cer -CAkey root.pvk -in serverAuth.req -out serverAuth.cer -days 10000 -extfile serverAuth.ext -sha256<br></code></pre></td></tr></table></figure>
+
+<p><code>serverAuth.cer</code>是公钥，<code>serverAuth.pvk</code>是私钥，签名请求文件<code>serverAuth.req</code>就可以删掉了</p>
+<p>写个服务器测试一下</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><code class="hljs js"><span class="hljs-keyword">const</span> https = <span class="hljs-built_in">require</span>(<span class="hljs-string">&#x27;https&#x27;</span>);<br><span class="hljs-keyword">const</span> fs = <span class="hljs-built_in">require</span>(<span class="hljs-string">&#x27;fs&#x27;</span>);<br><br><span class="hljs-keyword">const</span> options = &#123;<br>	<span class="hljs-attr">key</span>: fs.<span class="hljs-title function_">readFileSync</span>(<span class="hljs-string">&#x27;serverAuth.pvk&#x27;</span>),<br>	<span class="hljs-attr">cert</span>: fs.<span class="hljs-title function_">readFileSync</span>(<span class="hljs-string">&#x27;serverAuth.cer&#x27;</span>)<br>&#125;;<br><br>https.<span class="hljs-title function_">createServer</span>(options, <span class="hljs-function">(<span class="hljs-params">req, res</span>) =&gt;</span> &#123;<br>	res.<span class="hljs-title function_">end</span>(<span class="hljs-string">&#x27;hello world&#x27;</span>);<br>&#125;).<span class="hljs-title function_">listen</span>(<span class="hljs-number">443</span>);<br></code></pre></td></tr></table></figure>
+
+<p><img src="/articles/selfsigning/2.png" srcset="/img/loading.gif" lazyload></p>
+<p>赏心悦目的绿色，不错不错</p>
+<h1 id="签发应用签名证书"><a href="#签发应用签名证书" class="headerlink" title="签发应用签名证书"></a>签发应用签名证书</h1><p>应用签名的签发步骤和ssl是一样的，只不过配置文件需要改一下</p>
+<p>创建配置文件<code>codeSigning.ext</code></p>
+<figure class="highlight abnf"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs abnf"><span class="hljs-attribute">extendedKeyUsage</span> <span class="hljs-operator">=</span> codeSigning<br></code></pre></td></tr></table></figure>
+
+<p>是的，就一行，非常简洁</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><code class="hljs shell"><span class="hljs-meta prompt_">#</span><span class="language-bash">创建签名请求</span><br>openssl req -newkey rsa:2048 -keyout codeSigning.pvk -out codeSigning.req -subj /CN=&quot;OpenTrust CodeSigning&quot; -sha256 -nodes<br><span class="hljs-meta prompt_"></span><br><span class="hljs-meta prompt_">#</span><span class="language-bash">签名</span><br>openssl x509 -req -CA root/root.cer -CAkey root/root.pvk -in codeSigning.req -out codeSigning.cer -days 10000 -extfile config/codeSigning.ext -sha256<br><span class="hljs-meta prompt_"></span><br><span class="hljs-meta prompt_">#</span><span class="language-bash">pvk转pfx，因为Windows SDK自带的签名软件signtool.exe只支持pfx</span><br>openssl pkcs12 -export -out codeSigning.pfx -inkey codeSigning.pvk -in codeSigning.cer -certfile root/root.cer -passout pass:<br></code></pre></td></tr></table></figure>
+
+<p>然后删掉<code>codeSigning.req</code> <code>codeSigning.cer</code> <code>codeSigning.pvk</code>，我们只需要<code>codeSigning.pfx</code></p>
+<p>签名<code>example.exe</code>，这里上sha1 + sha256双签名，看着就高端</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs shell">signtool.exe sign /v /f codeSigning.pfx /fd sha1 example.exe<br>signtool.exe sign /as /v /f codeSigning.pfx /fd sha256 example.exe<br></code></pre></td></tr></table></figure>
+
+<p><img src="/articles/selfsigning/3.png" srcset="/img/loading.gif" lazyload></p>
+<h1 id="Windows内核签名"><a href="#Windows内核签名" class="headerlink" title="Windows内核签名"></a>Windows内核签名</h1><figure class="highlight apache"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs apache"><span class="hljs-attribute">extendedKeyUsage</span> = <span class="hljs-number">1.3.6.1</span>.<span class="hljs-number">4.1.311.10</span>.<span class="hljs-number">3</span>.<span class="hljs-number">5</span>, <span class="hljs-number">1.3.6.1</span>.<span class="hljs-number">4.1.311.10</span>.<span class="hljs-number">3</span>.<span class="hljs-number">5</span>.<span class="hljs-number">1</span>, codeSigning<br></code></pre></td></tr></table></figure>
+
+<p>这个好像实现不了，无论怎么搞都会报错无法加载。微软对内核的管理越来越严格，想必是使用了什么申必手段来检查自签名，，，</p>
+<p><img src="/articles/selfsigning/4.png" srcset="/img/loading.gif" lazyload></p>
+<h1 id="注册表导入根证书"><a href="#注册表导入根证书" class="headerlink" title="注册表导入根证书"></a>注册表导入根证书</h1><p>正常手段导入windows会显示警告，用注册表导入就悄无声息（笑</p>
+<p>用户根证书路径</p>
+<figure class="highlight moonscript"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs moonscript">HKEY_CURRENT_USER\Software\Microsoft\SystemCertificates\Root\Certificates\[证书指纹]<br></code></pre></td></tr></table></figure>
+
+<p>计算机根证书路径</p>
+<figure class="highlight moonscript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs moonscript">HKEY_LOCAL_MACHINE\SOFTWARE\WOW6432Node\Microsoft\SystemCertificates\ROOT\Certificates\[证书指纹]<br>HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\SystemCertificates\ROOT\Certificates\[证书指纹]<br></code></pre></td></tr></table></figure>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+  
+    <div class="post-meta">
+      <i class="iconfont icon-tags"></i>
+      
+        <a href="/tags/%E7%BC%96%E7%A8%8B/" class="print-no-link">#编程</a>
+      
+        <a href="/tags/%E7%BD%91%E7%BB%9C%E5%AE%89%E5%85%A8/" class="print-no-link">#网络安全</a>
+      
+    </div>
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>使用自签名证书用于ssl通信</div>
+      <div>https://crackme.net/articles/selfsigning/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>Brassinolide</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2025年1月4日</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by-nc-sa/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-cc-by"></i>
+                  </span>
+                </a>
+              
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by-nc-sa/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="NC - 非商业性使用">
+                    <i class="iconfont icon-cc-nc"></i>
+                  </span>
+                </a>
+              
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by-nc-sa/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="SA - 相同方式共享">
+                    <i class="iconfont icon-cc-sa"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/articles/simdsha256/" title="【编程】SIMD SHA指令集加速sha256计算">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">【编程】SIMD SHA指令集加速sha256计算</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/articles/tsa/" title="使用免费时间戳服务器签名任意文件，保护知识产权">
+                        <span class="hidden-mobile">使用免费时间戳服务器签名任意文件，保护知识产权</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+  
+  
+    <article id="comments" lazyload>
+      
+  <script type="text/javascript">
+    Fluid.utils.loadComments('#comments', function() {
+      var light = 'github-light';
+      var dark = 'github-dark';
+      var schema = document.documentElement.getAttribute('data-user-color-scheme');
+      if (schema === 'dark') {
+        schema = dark;
+      } else {
+        schema = light;
+      }
+      window.UtterancesThemeLight = light;
+      window.UtterancesThemeDark = dark;
+      var s = document.createElement('script');
+      s.setAttribute('src', 'https://utteranc.es/client.js');
+      s.setAttribute('repo', 'Brassinolide/Brassinolide.github.io');
+      s.setAttribute('issue-term', 'pathname');
+      
+      s.setAttribute('label', 'utterances');
+      
+      s.setAttribute('theme', schema);
+      s.setAttribute('crossorigin', 'anonymous');
+      document.getElementById('comments').appendChild(s);
+    })
+  </script>
+  <noscript>Please enable JavaScript to view the comments</noscript>
+
+
+    </article>
+  
+
+
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+  
+  
+
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       框架 <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> | 主题 <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> <div style="font-size: 0.85rem"> <span id="timeDate">载入天数...</span> <span id="times">载入时分秒...</span> <script src="/js/duration.js"></script> </div> 
+    </div>
+  
+  
+    <div class="statistics">
+  
+  
+
+  
+    
+      <span id="busuanzi_container_site_pv" style="display: none">
+        总访问量 
+        <span id="busuanzi_value_site_pv"></span>
+         次
+      </span>
+    
+    
+      <span id="busuanzi_container_site_uv" style="display: none">
+        总访客数 
+        <span id="busuanzi_value_site_uv"></span>
+         人
+      </span>
+    
+    
+
+  
+
+</div>
+
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":true,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.4/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  var relativeDate = function() {
+    var updatedTime = document.getElementById('updated-time');
+    if (updatedTime) {
+      var text = updatedTime.textContent;
+      var reg = /\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:Z|[+-]\d{2}:\d{2})/;
+      var matchs = text.match(reg);
+      if (matchs) {
+        var relativeTime = moment(matchs[0]).fromNow();
+        updatedTime.textContent = text.replace(reg, relativeTime);
+      }
+      updatedTime.style.display = '';
+    }
+  };
+  Fluid.utils.createScript('https://lib.baomitu.com/moment.js/2.29.4/moment.min.js', function() {
+    if (!'zh-cn'.startsWith('en')) {
+      Fluid.utils.createScript('https://lib.baomitu.com/moment.js/2.29.4/locale/zh-cn.min.js', function() {
+        relativeDate();
+      });
+    } else {
+      relativeDate();
+    }
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.20.1/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/5.0.0/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script  src="/js/local-search.js" ></script>
+
+  <script defer src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js" ></script>
+
+
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>

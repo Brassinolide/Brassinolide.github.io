@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+    <head>
+        <meta charset="UTF-8" />
+        <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+        <meta name="referrer" content="no-referrer" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>流量消耗器</title>
+        <script src="https://cdn.jsdelivr.net/npm/vue@2.7.16/dist/vue.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/axios@1.7.7/dist/axios.min.js"></script>
+        <style>
+            body {
+                font-family: Arial, sans-serif;
+                background-color: #f4f4f4;
+                color: #333;
+                margin: 20px;
+                line-height: 1.6;
+            }
+            .container {
+                max-width: 600px;
+                margin: 0 auto;
+                background-color: #fff;
+                padding: 20px;
+                border-radius: 10px;
+                box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+                text-align: center;
+            }
+            label {
+                display: block;
+                margin-bottom: 5px;
+                font-weight: bold;
+            }
+            select,
+            input[type="number"],
+            input[type="text"] {
+                width: 100%;
+                padding: 10px;
+                margin-bottom: 20px;
+                border: 1px solid #ddd;
+                border-radius: 4px;
+                font-size: 14px;
+                box-sizing: border-box;
+            }
+            button {
+                width: 100%;
+                padding: 12px;
+                background-color: #007bff;
+                border: none;
+                color: white;
+                font-size: 16px;
+                border-radius: 4px;
+                cursor: pointer;
+                transition: background-color 0.3s;
+            }
+            button:hover {
+                background-color: #0056b3;
+            }
+            p {
+                font-size: 16px;
+                margin: 10px 0;
+            }
+            strong {
+                color: #007bff;
+            }
+            @media (max-width: 600px) {
+                .container {
+                    padding: 15px;
+                }
+            }
+        </style>
+    </head>
+    <body>
+        <div id="app" class="container">
+            <div>
+                <label for="input">下载节点</label>
+                <select type="text" v-model="set.input" class="form-control">
+                    <option value="https://speed.cloudflare.com/__down?bytes=100000000" selected="selected">[默认] cloudflare 100MB</option>
+                    <option value="https://www.cucloud.cn/templets/1/default/images/nodes-overview-bg.png">联通云</option>
+                    <option value="https://cd.pddpic.com/android_dev/2024-10-29/2cbce5a94a1ff8cb4e8125a114960a03.apk">拼多多</option>
+                    <option value="https://i0.hdslb.com/bfs/article/d435b548d27ec95c226c6d217210d98d22682236.gif">bilibili</option>
+                    <option value="https://lf1-cdn-tos.bytegoofy.com/goofy/ies/douyin_home_web/imgs/mob_1-1.15453147.gif">抖音</option>
+                </select>
+                <input type="text" v-model="set.input" placeholder="下载链接" class="form-control" autocomplete="off" />
+            </div>
+            <div>
+                <label for="threads">线程</label>
+                <input type="number" v-model="set.thread" min="1" />
+            </div>
+            <div>
+                <button @click="run">{{set.status?'停止':'开始'}}</button>
+            </div>
+            <div>
+                <p><strong>速度：</strong> {{speed}}</p>
+                <p><strong>用时：</strong> {{FormatTime(spend)}}</p>
+                <p><strong>已消耗流量：</strong> {{FormatSize(waste)}}</p>
+            </div>
+        </div>
+        <script>
+            var errors = null;
+            new Vue({
+                el: "#app",
+                data: {
+                    set: {
+                        input: "https://speed.cloudflare.com/__down?bytes=100000000",
+                        output: "",
+                        infinite: true,
+                        status: false,
+                        thread: 1,
+                    },
+                    tasks: [],
+                    speed: "0",
+                    spend: 0,
+                    waste: 0,
+                    timer: null,
+                    cancelSource: axios.CancelToken.source(),
+                },
+                watch: {
+                    async "set.status"(newVal) {
+                        if (newVal) {
+                            this.cancelSource = axios.CancelToken.source();
+                            this.timer = setInterval(() => {
+                                this.speed =
+                                    this.FormatSize(
+                                        this.tasks.reduce(function (prev, curr) {
+                                            return prev + curr;
+                                        }, 0)
+                                    ) + "/s";
+                                this.spend++;
+                            }, 1000);
+                            do {
+                                await new Promise((resolve) => {
+                                    let task = [];
+                                    for (let i = 0; i < this.set.thread; i++) {
+                                        task.push(this.download(Math.random().toString(36).substr(2, 10)));
+                                    }
+                                    Promise.all(task).finally(resolve);
+                                });
+                            } while (this.set.status && this.set.infinite);
+                        } else {
+                            clearInterval(this.timer);
+                            this.cancelSource.cancel();
+                        }
+                    },
+                },
+                methods: {
+                    run() {
+                        this.set.status = !this.set.status;
+                    },
+                    download(id) {
+                        let loaded = 0;
+                        let speed = 0;
+                        let timestamp = new Date().getTime();
+                        let that = this;
+                        const index = this.tasks.push(speed) - 1;
+                        return axios
+                            .request({
+                                url: this.set.input,
+                                params: {
+                                    [id]: id,
+                                },
+                                cancelToken: this.cancelSource.token,
+                                onDownloadProgress: function (progressEvent) {
+                                    const now = new Date().getTime();
+                                    speed = ((progressEvent.loaded - loaded) / (now - timestamp)) * 1000;
+                                    that.tasks[index] = speed;
+                                    that.waste += progressEvent.loaded - loaded;
+                                    loaded = progressEvent.loaded;
+                                    timestamp = now;
+                                },
+                            })
+                            .catch((e) => {
+                                if (!axios.isCancel(e)) {
+                                    this.set.status = false;
+                                    window.alert(e.message);
+                                }
+                            })
+                            .finally(() => {
+                                delete that.tasks[index];
+                            });
+                    },
+                    FormatTime(second) {
+                        if (second < 0) return "";
+
+                        const hour = Math.floor(second / 3600);
+                        const min = Math.floor(second / 60) % 60;
+                        const sec = second % 60;
+
+                        const hourStr = hour > 0 ? `${hour < 10 ? "0" : ""}${hour}h` : "";
+                        const minStr = hour > 0 || min > 0 ? `${min < 10 ? "0" : ""}${min}m` : "";
+                        const secStr = `${sec < 10 ? "0" : ""}${sec}s`;
+
+                        return hourStr + minStr + secStr;
+                    },
+                    FormatSize(bytes) {
+                        if (bytes === 0) return "0 Bytes";
+
+                        const i = Math.floor(Math.log(bytes) / Math.log(1000));
+                        return parseFloat((bytes / Math.pow(1000, i)).toFixed(2)) + " " + ["Bytes", "KB", "MB", "GB", "TB", "PB", "WTF"][i];
+                    },
+                },
+            });
+        </script>
+    </body>
+</html>

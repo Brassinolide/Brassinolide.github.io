@@ -1,0 +1,477 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  
+  <url>
+    <loc>https://crackme.net/articles/wincert/</loc>
+    
+    <lastmod>2025-05-28</lastmod>
+    
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
+    <loc>https://crackme.net/articles/vs_exploit_research/</loc>
+    
+    <lastmod>2025-05-11</lastmod>
+    
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
+    <loc>https://crackme.net/articles/xss_labs_0click/</loc>
+    
+    <lastmod>2025-04-20</lastmod>
+    
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
+    <loc>https://crackme.net/articles/resln/</loc>
+    
+    <lastmod>2025-03-30</lastmod>
+    
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
+    <loc>https://crackme.net/weixin/index.html</loc>
+    
+    <lastmod>2025-03-16</lastmod>
+    
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
+    <loc>https://crackme.net/articles/noburpsuite/</loc>
+    
+    <lastmod>2025-03-16</lastmod>
+    
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
+    <loc>https://crackme.net/articles/rfc3161docs/</loc>
+    
+    <lastmod>2025-03-06</lastmod>
+    
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
+    <loc>https://crackme.net/articles/ring3killav/</loc>
+    
+    <lastmod>2025-03-04</lastmod>
+    
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
+    <loc>https://crackme.net/articles/rtcleak/</loc>
+    
+    <lastmod>2025-02-19</lastmod>
+    
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
+    <loc>https://crackme.net/articles/openssl/</loc>
+    
+    <lastmod>2025-02-14</lastmod>
+    
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
+    <loc>https://crackme.net/articles/antiscan/</loc>
+    
+    <lastmod>2025-02-11</lastmod>
+    
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
+    <loc>https://crackme.net/articles/bypass_icp/</loc>
+    
+    <lastmod>2025-02-08</lastmod>
+    
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
+    <loc>https://crackme.net/articles/man_capstone/</loc>
+    
+    <lastmod>2025-02-06</lastmod>
+    
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
+    <loc>https://crackme.net/articles/tsa/</loc>
+    
+    <lastmod>2025-02-01</lastmod>
+    
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
+    <loc>https://crackme.net/about/index.html</loc>
+    
+    <lastmod>2025-01-27</lastmod>
+    
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
+    <loc>https://crackme.net/tools/index.html</loc>
+    
+    <lastmod>2025-01-27</lastmod>
+    
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
+    <loc>https://crackme.net/articles/shellcode/</loc>
+    
+    <lastmod>2025-01-23</lastmod>
+    
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
+    <loc>https://crackme.net/articles/mydiskpart/</loc>
+    
+    <lastmod>2025-01-15</lastmod>
+    
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
+    <loc>https://crackme.net/articles/simdcrc/</loc>
+    
+    <lastmod>2025-01-15</lastmod>
+    
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
+    <loc>https://crackme.net/articles/simdsha256/</loc>
+    
+    <lastmod>2025-01-14</lastmod>
+    
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
+    <loc>https://crackme.net/articles/simd_aes/</loc>
+    
+    <lastmod>2025-01-13</lastmod>
+    
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
+    <loc>https://crackme.net/articles/selfsigning/</loc>
+    
+    <lastmod>2025-01-04</lastmod>
+    
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
+    <loc>https://crackme.net/articles/aliddns/</loc>
+    
+    <lastmod>2024-12-28</lastmod>
+    
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
+    <loc>https://crackme.net/articles/string_formatter/</loc>
+    
+    <lastmod>2024-11-30</lastmod>
+    
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
+    <loc>https://crackme.net/articles/fuck_isp/</loc>
+    
+    <lastmod>2024-11-03</lastmod>
+    
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
+    <loc>https://crackme.net/articles/h3class_rdp_exploit/</loc>
+    
+    <lastmod>2024-11-01</lastmod>
+    
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
+    <loc>https://crackme.net/articles/burp_ssl_bug/</loc>
+    
+    <lastmod>2024-10-05</lastmod>
+    
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
+    <loc>https://crackme.net/articles/github_run_away/</loc>
+    
+    <lastmod>2024-10-02</lastmod>
+    
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
+    <loc>https://crackme.net/articles/appDomainManager_exploit/</loc>
+    
+    <lastmod>2024-10-01</lastmod>
+    
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
+    <loc>https://crackme.net/articles/wintrust_example/</loc>
+    
+    <lastmod>2024-10-01</lastmod>
+    
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
+    <loc>https://crackme.net/articles/run_as_system/</loc>
+    
+    <lastmod>2024-10-01</lastmod>
+    
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
+    <loc>https://crackme.net/articles/ring3_rootkit/</loc>
+    
+    <lastmod>2024-10-01</lastmod>
+    
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
+    <loc>https://crackme.net/articles/github_email_trace/</loc>
+    
+    <lastmod>2024-10-01</lastmod>
+    
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
+    <loc>https://crackme.net/articles/evil_sln/</loc>
+    
+    <lastmod>2024-10-01</lastmod>
+    
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
+    <loc>https://crackme.net/articles/chrome_debugger_force_bypass/</loc>
+    
+    <lastmod>2024-10-01</lastmod>
+    
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+
+  <url>
+    <loc>https://crackme.net/</loc>
+    <lastmod>2025-05-28</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>1.0</priority>
+  </url>
+
+  
+  <url>
+    <loc>https://crackme.net/tags/%E7%BC%96%E7%A8%8B/</loc>
+    <lastmod>2025-05-28</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  
+  <url>
+    <loc>https://crackme.net/tags/%E7%BD%91%E7%BB%9C%E5%AE%89%E5%85%A8/</loc>
+    <lastmod>2025-05-28</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  
+  <url>
+    <loc>https://crackme.net/tags/%E7%BD%91%E7%BB%9C%E5%B7%A5%E7%A8%8B/</loc>
+    <lastmod>2025-05-28</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  
+  <url>
+    <loc>https://crackme.net/tags/%E5%AE%89%E5%85%A8%E5%B7%A5%E5%85%B7/</loc>
+    <lastmod>2025-05-28</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  
+  <url>
+    <loc>https://crackme.net/tags/%E6%B8%97%E9%80%8F%E6%B5%8B%E8%AF%95/</loc>
+    <lastmod>2025-05-28</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  
+  <url>
+    <loc>https://crackme.net/tags/%E4%BA%91%E6%9C%8D%E5%8A%A1%E5%99%A8/</loc>
+    <lastmod>2025-05-28</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  
+  <url>
+    <loc>https://crackme.net/tags/%E8%BF%90%E7%BB%B4/</loc>
+    <lastmod>2025-05-28</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  
+  <url>
+    <loc>https://crackme.net/tags/Windows/</loc>
+    <lastmod>2025-05-28</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  
+  <url>
+    <loc>https://crackme.net/tags/%E9%80%86%E5%90%91%E5%B7%A5%E7%A8%8B/</loc>
+    <lastmod>2025-05-28</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  
+  <url>
+    <loc>https://crackme.net/tags/Github/</loc>
+    <lastmod>2025-05-28</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  
+  <url>
+    <loc>https://crackme.net/tags/%E5%89%8D%E7%AB%AF/</loc>
+    <lastmod>2025-05-28</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  
+  <url>
+    <loc>https://crackme.net/tags/python/</loc>
+    <lastmod>2025-05-28</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  
+  <url>
+    <loc>https://crackme.net/tags/windows/</loc>
+    <lastmod>2025-05-28</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  
+  <url>
+    <loc>https://crackme.net/tags/RFC3161/</loc>
+    <lastmod>2025-05-28</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  
+  <url>
+    <loc>https://crackme.net/tags/%E6%BC%8F%E6%B4%9E/</loc>
+    <lastmod>2025-05-28</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  
+  <url>
+    <loc>https://crackme.net/tags/%E5%AF%86%E7%A0%81%E5%AD%A6/</loc>
+    <lastmod>2025-05-28</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  
+  <url>
+    <loc>https://crackme.net/tags/%E8%80%83%E7%A0%94408/</loc>
+    <lastmod>2025-05-28</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  
+  <url>
+    <loc>https://crackme.net/tags/C%E8%AF%AD%E8%A8%80/</loc>
+    <lastmod>2025-05-28</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  
+  <url>
+    <loc>https://crackme.net/tags/%E9%80%86%E5%90%91/</loc>
+    <lastmod>2025-05-28</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  
+
+  
+  <url>
+    <loc>https://crackme.net/categories/%E8%AE%BA%E6%96%87%E7%A0%94%E8%AF%BB/</loc>
+    <lastmod>2025-05-28</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  
+  <url>
+    <loc>https://crackme.net/categories/%E6%96%87%E6%A1%A3/</loc>
+    <lastmod>2025-05-28</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  
+</urlset>

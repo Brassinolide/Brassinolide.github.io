@@ -1,0 +1,854 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/035b682805d10e4c77772bc6e936d08605d23c86.png">
+  <link rel="icon" href="/img/035b682805d10e4c77772bc6e936d08605d23c86.png">
+  
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+    <meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="Brassinolide">
+  <meta name="keywords" content="博客,计算机,编程,逆向工程,web安全,网络安全,技术文章,安全研究,ctf,python,c/c++">
+  
+    <meta name="description" content="【编程】AES-NI指令集实现快速AES加解密">
+<meta property="og:type" content="article">
+<meta property="og:title" content="【编程】AES-NI指令集实现快速AES加解密">
+<meta property="og:url" content="https://crackme.net/articles/simd_aes/index.html">
+<meta property="og:site_name" content="CrackMe.net">
+<meta property="og:description" content="【编程】AES-NI指令集实现快速AES加解密">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://crackme.net/articles/simd_aes/5.png">
+<meta property="og:image" content="https://crackme.net/articles/simd_aes/4.png">
+<meta property="og:image" content="https://crackme.net/articles/simd_aes/6.jpeg">
+<meta property="article:published_time" content="2024-12-30T11:57:27.000Z">
+<meta property="article:modified_time" content="2025-01-13T09:13:08.287Z">
+<meta property="article:author" content="Brassinolide">
+<meta property="article:tag" content="编程">
+<meta property="article:tag" content="网络安全">
+<meta property="article:tag" content="密码学">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://crackme.net/articles/simd_aes/5.png">
+  
+  
+    <meta name="referrer" content="no-referrer-when-downgrade">
+  
+  
+  <title>【编程】AES-NI指令集实现快速AES加解密 | CrackMe.net</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/KaTeX/0.16.2/katex.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1749284_5i9bdhy70f8.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1736178_k526ubmyhba.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+  
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_4819174_gp0ncad5v26.css">
+<link rel="stylesheet" href="/css/hexo-math-style.css">
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"crackme.net","root":"/","version":"1.9.8","typing":{"enable":false,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":true,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":false,"follow_dnt":true,"baidu":null,"google":{"measurement_id":null},"tencent":{"sid":null,"cid":null},"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false},"umami":{"src":null,"website_id":null,"domains":null,"start_time":"2024-01-01T00:00:00.000Z","token":null,"api_server":null}},"search_path":"/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+
+  
+<!-- hexo injector head_end start -->
+<link rel="stylesheet" href="/./css/hexo-math-style.css">
+<!-- hexo injector head_end end --><meta name="generator" content="Hexo 7.3.0"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 40vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>CrackMe.net</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/" target="_self">
+                <i class="iconfont icon-home-fill"></i>
+                <span>首页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/weixin/" target="_self">
+                <i class="iconfont icon-wechat-fill"></i>
+                <span>公众号</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/" target="_self">
+                <i class="iconfont icon-archive-fill"></i>
+                <span>归档</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/" target="_self">
+                <i class="iconfont icon-category-fill"></i>
+                <span>分类</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/" target="_self">
+                <i class="iconfont icon-tags-fill"></i>
+                <span>标签</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/" target="_self">
+                <i class="iconfont icon-user-fill"></i>
+                <span>关于</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/links/" target="_self">
+                <i class="iconfont icon-link-fill"></i>
+                <span>友链</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tools/" target="_self">
+                <i class="iconfont icon-briefcase"></i>
+                <span>在线工具</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="https://www.travellings.cn/go.html" target="_self">
+                <i class="iconfont icon-subway"></i>
+                <span>开往</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" false
+     style="background: url('/img/default.jpg') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle">【编程】AES-NI指令集实现快速AES加解密</span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2024-12-30 19:57" pubdate>
+          2024年12月30日 晚上
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          1.8k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          16 分钟
+        
+      </span>
+    
+
+    
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header">【编程】AES-NI指令集实现快速AES加解密</h1>
+            
+              <p id="updated-time" class="note note-info" style="display: none">
+                
+                  
+                    本文最后更新于 2025-01-13T17:13:08+08:00
+                  
+                  
+
+                
+              </p>
+            
+            
+              <div class="markdown-body">
+                
+                <h1 id="AES基本流程"><a href="#AES基本流程" class="headerlink" title="AES基本流程"></a>AES基本流程</h1><p>AES-NI指令集封装好了AES的所有步骤，所以我们没有必要了解每一步的实现方法，只需要了解基本流程就可以了</p>
+<p>密钥长度可为128、192、256比特，分别为10轮、12轮、14轮</p>
+<p>明文长度都为128比特</p>
+<p>在128比特密钥长度中，密钥被拓展成44个四字节数组（uint32_t roundKeys[44]），每轮取4个作为轮密钥</p>
+<p>不过我们用SIMD实现，一个元素有16字节大，那就是11个（__m128i roundKeys[11]），每轮取一个作为轮密钥</p>
+<p>密钥拓展流程：<code>字循环 -&gt; 字节代换 -&gt; 轮常量异或</code></p>
+<p><img src="/articles/simd_aes/5.png" srcset="/img/loading.gif" lazyload></p>
+<p>加密流程：开始时，进行一次<code>轮密钥加</code>（就是异或运算）；之后的每一轮，都是<code>字节替换 -&gt; 行移位 -&gt; 列混合 -&gt; 轮密钥加</code>；最后一轮，进行<code>字节替换 -&gt; 行移位 -&gt; 轮密钥加</code></p>
+<p><img src="/articles/simd_aes/4.png" srcset="/img/loading.gif" lazyload></p>
+<p>注意最后一轮没有列混合，使用的SIMD指令也是不同的（列混合是一个线性变换，它不会增加最后一轮的安全性）</p>
+<h1 id="检测CPU是否支持必须的指令集"><a href="#检测CPU是否支持必须的指令集" class="headerlink" title="检测CPU是否支持必须的指令集"></a>检测CPU是否支持必须的指令集</h1><p>以下代码获取cpuid并检测是否支持SSE2和AES-NI指令集</p>
+<p>只要不是什么老古董大头电脑，都应该支持，除非用户在BIOS里手动关闭了这些功能</p>
+<p>参考intel开发手册<code>CPUID—CPU Identification</code> <code>Table 3-19. Feature Information Returned in the ECX Register</code> <code>Table 3-20. More on Feature Information Returned in the EDX Register</code></p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><code class="hljs C++"><span class="hljs-function"><span class="hljs-type">bool</span> <span class="hljs-title">CheckCPUCapability</span><span class="hljs-params">()</span> </span>&#123;<br>    <span class="hljs-type">int</span> i[<span class="hljs-number">4</span>];<br>    __cpuid(i, <span class="hljs-number">1</span>);<br>    <span class="hljs-type">bool</span> AES_NI = i[<span class="hljs-number">2</span>] &amp; (<span class="hljs-number">1</span> &lt;&lt; <span class="hljs-number">25</span>);<br>    <span class="hljs-type">bool</span> SSE2 = i[<span class="hljs-number">3</span>] &amp; (<span class="hljs-number">1</span> &lt;&lt; <span class="hljs-number">26</span>);<br>    <span class="hljs-keyword">return</span> AES_NI &amp;&amp; SSE2;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<h1 id="Unaligned和Aligned指令"><a href="#Unaligned和Aligned指令" class="headerlink" title="Unaligned和Aligned指令"></a>Unaligned和Aligned指令</h1><p><code>Aligned</code>：要求数据内存地址必须对其，可以提升效率，例如<code>MOVDQA</code>指令（<code>_mm_load_si128</code> <code>_mm_store_si128</code>）</p>
+<p><code>Unaligned</code>：不要求数据对其，例如<code>MOVDQU</code>指令（<code>_mm_loadu_si128</code> <code>_mm_storeu_si128</code>）</p>
+<p>下文中，所有代码都使用Aligned指令</p>
+<h1 id="基本SIMD操作"><a href="#基本SIMD操作" class="headerlink" title="基本SIMD操作"></a>基本SIMD操作</h1><p>实现AES之前，先来了解一下基本的SIMD操作</p>
+<p>我们使用SDK封装好的函数，不需要写汇编，编译器自动帮你隐藏了很多底层细节</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br></pre></td><td class="code"><pre><code class="hljs C++"><span class="hljs-comment">//加载内存到xmm寄存器</span><br>_mm_load_si128(ptr_to_memory)<br><br><span class="hljs-comment">//保存xmm寄存器到内存</span><br>_mm_store_si128(ptr_to_memory, xmm_reg)<br><br><span class="hljs-comment">//异或运算</span><br>_mm_xor_si128(xmm_reg, xmm_reg)<br><br><span class="hljs-comment">//左移位运算，以字节为单位（别和C语言中的&lt;&lt;运算搞混了，那个以比特为单位）</span><br>_mm_slli_si128(xmm_reg, imm)<br><br><span class="hljs-comment">//32位重排运算</span><br><span class="hljs-comment">/*</span><br><span class="hljs-comment">通过一个控制掩码来指定如何从输入向量中选择元素，并将这些元素放入结果向量的对应位置</span><br><span class="hljs-comment">控制掩码可以使用宏 _MM_SHUFFLE 创建，_MM_SHUFFLE 中的四个参数为向量元素的索引，顺序是反过来的（真是反直觉</span><br><span class="hljs-comment">比如调用 _mm_shuffle_epi32([A, B, C, D], _MM_SHUFFLE(0, 1, 2, 3))，结果是[D, C, B, A]</span><br><span class="hljs-comment">*/</span><br>_mm_shuffle_epi32(xmm_reg, imm)<br><br><span class="hljs-comment">//AES密钥拓展辅助函数</span><br>_mm_aeskeygenassist_si128(xmm_reg, imm)<br><br><span class="hljs-comment">//进行一轮AES加密</span><br>_mm_aesenc_si128(xmm_reg, xmm_reg)<br><br><span class="hljs-comment">//进行最后一轮AES加密</span><br>_mm_aesenclast_si128(xmm_reg, xmm_reg)<br><br><span class="hljs-comment">//逆列混淆，解密要用到</span><br>_mm_aesimc_si128(xmm_reg)<br></code></pre></td></tr></table></figure>
+
+<h1 id="实现AES"><a href="#实现AES" class="headerlink" title="实现AES"></a>实现AES</h1><h2 id="密钥拓展"><a href="#密钥拓展" class="headerlink" title="密钥拓展"></a>密钥拓展</h2><p><img src="/articles/simd_aes/6.jpeg" srcset="/img/loading.gif" lazyload></p>
+<p>图片来源<a target="_blank" rel="noopener" href="https://blog.csdn.net/gulang03/article/details/81175854">https://blog.csdn.net/gulang03/article/details/81175854</a></p>
+<p>参考图片可知，本轮的轮密钥由上一轮的轮密钥确定</p>
+<p>轮常量Rcon是固定的，为[0x01, 0x02, 0x04, 0x08, 0x10, 0x20, 0x40, 0x80, 0x1B, 0x36]</p>
+<p>你问我为什么轮常量是这些数？AES算法又不是我发明的，我哪里知道（笑</p>
+<p>第一轮的轮密钥无需计算，直接用<code>_mm_load_si128</code>加载进来便是</p>
+<p>后面每一轮i的轮密钥都按以下方式计算</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs C++">W[<span class="hljs-number">4</span>i] = W[<span class="hljs-number">4</span>i<span class="hljs-number">-4</span>] ⨁ _mm_aeskeygenassist_si128(W[<span class="hljs-number">4</span>i<span class="hljs-number">-1</span>])<br>W[<span class="hljs-number">4</span>i<span class="hljs-number">+1</span>] = W[<span class="hljs-number">4</span>i] ⨁ W[<span class="hljs-number">4</span>i<span class="hljs-number">-3</span>]<br>W[<span class="hljs-number">4</span>i<span class="hljs-number">+2</span>] = W[<span class="hljs-number">4</span>i<span class="hljs-number">+1</span>] ⨁ W[<span class="hljs-number">4</span>i<span class="hljs-number">-2</span>]<br>W[<span class="hljs-number">4</span>i<span class="hljs-number">+3</span>] = W[<span class="hljs-number">4</span>i<span class="hljs-number">+2</span>] ⨁ W[<span class="hljs-number">4</span>i<span class="hljs-number">-1</span>]<br></code></pre></td></tr></table></figure>
+
+<p>举个例子，第二轮的轮密钥为</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs C++">W[<span class="hljs-number">4</span>] = W[<span class="hljs-number">0</span>] ⨁ _mm_aeskeygenassist_si128(W[<span class="hljs-number">3</span>])<br>W[<span class="hljs-number">5</span>] = W[<span class="hljs-number">1</span>] ⨁ W[<span class="hljs-number">4</span>]<br>W[<span class="hljs-number">6</span>] = W[<span class="hljs-number">2</span>] ⨁ W[<span class="hljs-number">5</span>]<br>W[<span class="hljs-number">7</span>] = W[<span class="hljs-number">3</span>] ⨁ W[<span class="hljs-number">6</span>]<br></code></pre></td></tr></table></figure>
+
+<p>上面是伪代码，下面是代码实现：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><code class="hljs C++"><span class="hljs-function"><span class="hljs-type">static</span> __m128i <span class="hljs-title">AES_ExpandKey</span><span class="hljs-params">(__m128i key, __m128i generatedKey)</span> </span>&#123;<br>    generatedKey = _mm_shuffle_epi32(generatedKey, _MM_SHUFFLE(<span class="hljs-number">3</span>, <span class="hljs-number">3</span>, <span class="hljs-number">3</span>, <span class="hljs-number">3</span>));<br>    key = _mm_xor_si128(key, _mm_slli_si128(key, <span class="hljs-number">4</span>));<br>    key = _mm_xor_si128(key, _mm_slli_si128(key, <span class="hljs-number">4</span>));<br>    key = _mm_xor_si128(key, _mm_slli_si128(key, <span class="hljs-number">4</span>));<br>    <span class="hljs-keyword">return</span> _mm_xor_si128(key, generatedKey);<br>&#125;<br><br><span class="hljs-function"><span class="hljs-type">static</span> <span class="hljs-type">void</span> <span class="hljs-title">AES_GetRoundKeys</span><span class="hljs-params">(<span class="hljs-type">uint8_t</span> key[<span class="hljs-number">16</span>], __m128i roundKey[<span class="hljs-number">11</span>])</span> </span>&#123;<br>    roundKey[<span class="hljs-number">0</span>] = _mm_load_si128((<span class="hljs-type">const</span> __m128i*)(key));<br><br>    <span class="hljs-comment">//不能用循环！不能用循环！_mm_aeskeygenassist_si128第二个参数必须是编译时常量</span><br>    roundKey[<span class="hljs-number">1</span>] = <span class="hljs-built_in">AES_ExpandKey</span>(roundKey[<span class="hljs-number">0</span>], _mm_aeskeygenassist_si128(roundKey[<span class="hljs-number">0</span>], <span class="hljs-number">0x01</span>));<br>    roundKey[<span class="hljs-number">2</span>] = <span class="hljs-built_in">AES_ExpandKey</span>(roundKey[<span class="hljs-number">1</span>], _mm_aeskeygenassist_si128(roundKey[<span class="hljs-number">1</span>], <span class="hljs-number">0x02</span>));<br>    roundKey[<span class="hljs-number">3</span>] = <span class="hljs-built_in">AES_ExpandKey</span>(roundKey[<span class="hljs-number">2</span>], _mm_aeskeygenassist_si128(roundKey[<span class="hljs-number">2</span>], <span class="hljs-number">0x04</span>));<br>    roundKey[<span class="hljs-number">4</span>] = <span class="hljs-built_in">AES_ExpandKey</span>(roundKey[<span class="hljs-number">3</span>], _mm_aeskeygenassist_si128(roundKey[<span class="hljs-number">3</span>], <span class="hljs-number">0x08</span>));<br>    roundKey[<span class="hljs-number">5</span>] = <span class="hljs-built_in">AES_ExpandKey</span>(roundKey[<span class="hljs-number">4</span>], _mm_aeskeygenassist_si128(roundKey[<span class="hljs-number">4</span>], <span class="hljs-number">0x10</span>));<br>    roundKey[<span class="hljs-number">6</span>] = <span class="hljs-built_in">AES_ExpandKey</span>(roundKey[<span class="hljs-number">5</span>], _mm_aeskeygenassist_si128(roundKey[<span class="hljs-number">5</span>], <span class="hljs-number">0x20</span>));<br>    roundKey[<span class="hljs-number">7</span>] = <span class="hljs-built_in">AES_ExpandKey</span>(roundKey[<span class="hljs-number">6</span>], _mm_aeskeygenassist_si128(roundKey[<span class="hljs-number">6</span>], <span class="hljs-number">0x40</span>));<br>    roundKey[<span class="hljs-number">8</span>] = <span class="hljs-built_in">AES_ExpandKey</span>(roundKey[<span class="hljs-number">7</span>], _mm_aeskeygenassist_si128(roundKey[<span class="hljs-number">7</span>], <span class="hljs-number">0x80</span>));<br>    roundKey[<span class="hljs-number">9</span>] = <span class="hljs-built_in">AES_ExpandKey</span>(roundKey[<span class="hljs-number">8</span>], _mm_aeskeygenassist_si128(roundKey[<span class="hljs-number">8</span>], <span class="hljs-number">0x1B</span>));<br>    roundKey[<span class="hljs-number">10</span>] = <span class="hljs-built_in">AES_ExpandKey</span>(roundKey[<span class="hljs-number">9</span>], _mm_aeskeygenassist_si128(roundKey[<span class="hljs-number">9</span>], <span class="hljs-number">0x36</span>));<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<h2 id="加解密"><a href="#加解密" class="headerlink" title="加解密"></a>加解密</h2><p>轮密钥有了，下面实现加解密函数便可</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><code class="hljs C++"><span class="hljs-function"><span class="hljs-type">static</span> __m128i <span class="hljs-title">AES_Encrypt</span><span class="hljs-params">(__m128i plaintext, __m128i roundKey[<span class="hljs-number">11</span>])</span> </span>&#123;<br>    plaintext = _mm_xor_si128(plaintext, roundKey[<span class="hljs-number">0</span>]);<br><br>    <span class="hljs-keyword">for</span> (<span class="hljs-type">int</span> i = <span class="hljs-number">1</span>; i &lt; <span class="hljs-number">10</span>; i++)<br>        plaintext = _mm_aesenc_si128(plaintext, roundKey[i]);<br><br>    <span class="hljs-keyword">return</span> _mm_aesenclast_si128(plaintext, roundKey[<span class="hljs-number">10</span>]);<br>&#125;<br><br><span class="hljs-function"><span class="hljs-type">static</span> __m128i <span class="hljs-title">AES_Decrypt</span><span class="hljs-params">(__m128i cipher, __m128i roundKey[<span class="hljs-number">11</span>])</span> </span>&#123;<br>    cipher = _mm_xor_si128(cipher, roundKey[<span class="hljs-number">10</span>]);<br><br>    <span class="hljs-keyword">for</span> (<span class="hljs-type">int</span> i = <span class="hljs-number">9</span>; i &gt; <span class="hljs-number">0</span>; i--)<br>        cipher = _mm_aesdec_si128(cipher, _mm_aesimc_si128(roundKey[i]));<br><br>    <span class="hljs-keyword">return</span> _mm_aesdeclast_si128(cipher, roundKey[<span class="hljs-number">0</span>]);<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<h2 id="完整代码"><a href="#完整代码" class="headerlink" title="完整代码"></a>完整代码</h2><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br></pre></td><td class="code"><pre><code class="hljs C++"><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;intrin.h&gt;</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;cstdint&gt;</span></span><br><br><span class="hljs-function"><span class="hljs-type">static</span> __m128i <span class="hljs-title">AES_ExpandKey</span><span class="hljs-params">(__m128i key, __m128i generatedKey)</span> </span>&#123;<br>    generatedKey = _mm_shuffle_epi32(generatedKey, _MM_SHUFFLE(<span class="hljs-number">3</span>, <span class="hljs-number">3</span>, <span class="hljs-number">3</span>, <span class="hljs-number">3</span>));<br>    key = _mm_xor_si128(key, _mm_slli_si128(key, <span class="hljs-number">4</span>));<br>    key = _mm_xor_si128(key, _mm_slli_si128(key, <span class="hljs-number">4</span>));<br>    key = _mm_xor_si128(key, _mm_slli_si128(key, <span class="hljs-number">4</span>));<br>    <span class="hljs-keyword">return</span> _mm_xor_si128(key, generatedKey);<br>&#125;<br><br><span class="hljs-function"><span class="hljs-type">static</span> <span class="hljs-type">void</span> <span class="hljs-title">AES_GetRoundKeys</span><span class="hljs-params">(<span class="hljs-type">uint8_t</span> key[<span class="hljs-number">16</span>], __m128i roundKey[<span class="hljs-number">11</span>])</span> </span>&#123;<br>    roundKey[<span class="hljs-number">0</span>] = _mm_loadu_si128((<span class="hljs-type">const</span> __m128i*)(key));<br><br>    <span class="hljs-comment">//不能用循环！不能用循环！_mm_aeskeygenassist_si128第二个参数必须是编译时常量</span><br>    roundKey[<span class="hljs-number">1</span>] = <span class="hljs-built_in">AES_ExpandKey</span>(roundKey[<span class="hljs-number">0</span>], _mm_aeskeygenassist_si128(roundKey[<span class="hljs-number">0</span>], <span class="hljs-number">0x01</span>));<br>    roundKey[<span class="hljs-number">2</span>] = <span class="hljs-built_in">AES_ExpandKey</span>(roundKey[<span class="hljs-number">1</span>], _mm_aeskeygenassist_si128(roundKey[<span class="hljs-number">1</span>], <span class="hljs-number">0x02</span>));<br>    roundKey[<span class="hljs-number">3</span>] = <span class="hljs-built_in">AES_ExpandKey</span>(roundKey[<span class="hljs-number">2</span>], _mm_aeskeygenassist_si128(roundKey[<span class="hljs-number">2</span>], <span class="hljs-number">0x04</span>));<br>    roundKey[<span class="hljs-number">4</span>] = <span class="hljs-built_in">AES_ExpandKey</span>(roundKey[<span class="hljs-number">3</span>], _mm_aeskeygenassist_si128(roundKey[<span class="hljs-number">3</span>], <span class="hljs-number">0x08</span>));<br>    roundKey[<span class="hljs-number">5</span>] = <span class="hljs-built_in">AES_ExpandKey</span>(roundKey[<span class="hljs-number">4</span>], _mm_aeskeygenassist_si128(roundKey[<span class="hljs-number">4</span>], <span class="hljs-number">0x10</span>));<br>    roundKey[<span class="hljs-number">6</span>] = <span class="hljs-built_in">AES_ExpandKey</span>(roundKey[<span class="hljs-number">5</span>], _mm_aeskeygenassist_si128(roundKey[<span class="hljs-number">5</span>], <span class="hljs-number">0x20</span>));<br>    roundKey[<span class="hljs-number">7</span>] = <span class="hljs-built_in">AES_ExpandKey</span>(roundKey[<span class="hljs-number">6</span>], _mm_aeskeygenassist_si128(roundKey[<span class="hljs-number">6</span>], <span class="hljs-number">0x40</span>));<br>    roundKey[<span class="hljs-number">8</span>] = <span class="hljs-built_in">AES_ExpandKey</span>(roundKey[<span class="hljs-number">7</span>], _mm_aeskeygenassist_si128(roundKey[<span class="hljs-number">7</span>], <span class="hljs-number">0x80</span>));<br>    roundKey[<span class="hljs-number">9</span>] = <span class="hljs-built_in">AES_ExpandKey</span>(roundKey[<span class="hljs-number">8</span>], _mm_aeskeygenassist_si128(roundKey[<span class="hljs-number">8</span>], <span class="hljs-number">0x1B</span>));<br>    roundKey[<span class="hljs-number">10</span>] = <span class="hljs-built_in">AES_ExpandKey</span>(roundKey[<span class="hljs-number">9</span>], _mm_aeskeygenassist_si128(roundKey[<span class="hljs-number">9</span>], <span class="hljs-number">0x36</span>));<br>&#125;<br><br><span class="hljs-function"><span class="hljs-type">static</span> __m128i <span class="hljs-title">AES_Encrypt</span><span class="hljs-params">(__m128i plaintext, __m128i roundKey[<span class="hljs-number">11</span>])</span> </span>&#123;<br>    plaintext = _mm_xor_si128(plaintext, roundKey[<span class="hljs-number">0</span>]);<br><br>    <span class="hljs-keyword">for</span> (<span class="hljs-type">int</span> i = <span class="hljs-number">1</span>; i &lt; <span class="hljs-number">10</span>; i++)<br>        plaintext = _mm_aesenc_si128(plaintext, roundKey[i]);<br><br>    <span class="hljs-keyword">return</span> _mm_aesenclast_si128(plaintext, roundKey[<span class="hljs-number">10</span>]);<br>&#125;<br><br><span class="hljs-function"><span class="hljs-type">static</span> __m128i <span class="hljs-title">AES_Decrypt</span><span class="hljs-params">(__m128i cipher, __m128i roundKey[<span class="hljs-number">11</span>])</span> </span>&#123;<br>    cipher = _mm_xor_si128(cipher, roundKey[<span class="hljs-number">10</span>]);<br><br>    <span class="hljs-keyword">for</span> (<span class="hljs-type">int</span> i = <span class="hljs-number">9</span>; i &gt; <span class="hljs-number">0</span>; i--)<br>        cipher = _mm_aesdec_si128(cipher, _mm_aesimc_si128(roundKey[i]));<br><br>    <span class="hljs-keyword">return</span> _mm_aesdeclast_si128(cipher, roundKey[<span class="hljs-number">0</span>]);<br>&#125;<br><br><span class="hljs-function"><span class="hljs-type">int</span> <span class="hljs-title">main</span><span class="hljs-params">()</span> </span>&#123;<br>    <span class="hljs-type">uint8_t</span> key[<span class="hljs-number">16</span>] = &#123; <span class="hljs-string">&quot;this is key&quot;</span> &#125;;<br>    <span class="hljs-type">uint8_t</span> plaintext[<span class="hljs-number">16</span>] = &#123; <span class="hljs-string">&quot;plaintext&quot;</span> &#125;;<br>    <span class="hljs-type">uint8_t</span> cipher[<span class="hljs-number">16</span>] = &#123; <span class="hljs-number">0</span> &#125;;<br>    <span class="hljs-type">uint8_t</span> decrypted[<span class="hljs-number">16</span>] = &#123; <span class="hljs-number">0</span> &#125;;<br><br>    <span class="hljs-comment">//计算轮密钥</span><br>    __m128i roundKey[<span class="hljs-number">11</span>];<br>    <span class="hljs-built_in">AES_GetRoundKeys</span>(key, roundKey);<br><br>    <span class="hljs-comment">//加密</span><br>    _mm_store_si128((__m128i*)cipher, <span class="hljs-built_in">AES_Encrypt</span>(_mm_loadu_si128((<span class="hljs-type">const</span> __m128i*)plaintext), roundKey));<br><br>    <span class="hljs-comment">//解密</span><br>    _mm_store_si128((__m128i*)decrypted, <span class="hljs-built_in">AES_Decrypt</span>(_mm_loadu_si128((<span class="hljs-type">const</span> __m128i*)cipher), roundKey));<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<h2 id="实现操作模式"><a href="#实现操作模式" class="headerlink" title="实现操作模式"></a>实现操作模式</h2><p>加密主体写好了，剩下的实现各种操作模式就行了</p>
+<p>库：<a target="_blank" rel="noopener" href="https://github.com/Brassinolide/SIMD-AES">https://github.com/Brassinolide/SIMD-AES</a></p>
+<h3 id="ECB-电子密码本"><a href="#ECB-电子密码本" class="headerlink" title="ECB(电子密码本)"></a>ECB(电子密码本)</h3><p>最简单的模式，对每个16字节分组都执行相同的加密操作</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><code class="hljs C++">__m128i roundKey[<span class="hljs-number">11</span>];<br>_GetRoundKeys(key, roundKey);<br><br><span class="hljs-comment">//加密</span><br><span class="hljs-keyword">for</span> (<span class="hljs-type">size_t</span> offset = <span class="hljs-number">0</span>; offset &lt; cbBufferSize; offset += <span class="hljs-number">16</span>) &#123;<br>    _mm_store_si128((__m128i*)(buffer + offset), _AES_Encrypt(_mm_load_si128((<span class="hljs-type">const</span> __m128i*)(buffer + offset)), roundKey));<br>&#125;<br><br><span class="hljs-comment">//解密</span><br><span class="hljs-keyword">for</span> (<span class="hljs-type">size_t</span> offset = <span class="hljs-number">0</span>; offset &lt; cbBufferSize; offset += <span class="hljs-number">16</span>) &#123;<br>    _mm_store_si128((__m128i*)(buffer + offset), _AES_Decrypt(_mm_load_si128((<span class="hljs-type">const</span> __m128i*)(buffer + offset)), roundKey));<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<h3 id="CBC-密码分组链接"><a href="#CBC-密码分组链接" class="headerlink" title="CBC(密码分组链接)"></a>CBC(密码分组链接)</h3><p>初始化向量和第一个明文分组异或后加密，第二个明文分组和第一个密文分组异或后加密，以此类推</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><code class="hljs C++">__m128i roundKey[<span class="hljs-number">11</span>];<br>_GetRoundKeys(key, roundKey);<br><br><span class="hljs-comment">//加密</span><br>__m128i lastCipher = _mm_load_si128((<span class="hljs-type">const</span> __m128i*)iv);<br><span class="hljs-keyword">for</span> (<span class="hljs-type">size_t</span> offset = <span class="hljs-number">0</span>; offset &lt; cbBufferSize; offset += <span class="hljs-number">16</span>) &#123;<br>    lastCipher = _AES_Encrypt(_mm_xor_si128(lastCipher, _mm_load_si128((<span class="hljs-type">const</span> __m128i*)(buffer + offset))), roundKey);<br>    _mm_store_si128((__m128i*)(buffer + offset), lastCipher);<br>&#125;<br><br><span class="hljs-comment">//解密</span><br>__m128i lastCipher = _mm_load_si128((<span class="hljs-type">const</span> __m128i*)iv);<br><span class="hljs-keyword">for</span> (<span class="hljs-type">size_t</span> offset = <span class="hljs-number">0</span>; offset &lt; cbBufferSize; offset += <span class="hljs-number">16</span>) &#123;<br>    __m128i cipher = _mm_load_si128((<span class="hljs-type">const</span> __m128i*)(buffer + offset));<br>    _mm_store_si128((__m128i*)(buffer + offset), _mm_xor_si128(lastCipher, _AES_Decrypt(cipher, roundKey)));<br>    lastCipher = cipher;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<h3 id="CTR-计数器"><a href="#CTR-计数器" class="headerlink" title="CTR(计数器)"></a>CTR(计数器)</h3><p>加密计数器，再用计数器异或明文</p>
+<p>CTR很方便的一点是不需要填充，而且加解密函数完全相同，不需要再编写额外解密代码</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><code class="hljs C++">__m128i roundKey[<span class="hljs-number">11</span>];<br>_GetRoundKeys(key, roundKey);<br><br><span class="hljs-comment">//加密/解密</span><br>__m128i mask = _mm_set_epi32(<span class="hljs-number">0x00010203</span>, <span class="hljs-number">0x04050607</span>, <span class="hljs-number">0x08090a0b</span>, <span class="hljs-number">0x0c0d0e0f</span>);<br>__m128i ctr = _mm_shuffle_epi8(_mm_load_si128((<span class="hljs-type">const</span> __m128i*)iv), mask);<br><span class="hljs-keyword">for</span> (<span class="hljs-type">size_t</span> offset = <span class="hljs-number">0</span>; offset &lt; cbBufferSize;) &#123;<br>    <span class="hljs-type">size_t</span> remaining = cbBufferSize - offset;<br>    <span class="hljs-keyword">if</span> (cbBufferSize - offset &gt;= <span class="hljs-number">16</span>) &#123;<br>        _mm_store_si128((__m128i*)(buffer + offset), _mm_xor_si128(_AES_Encrypt(_mm_shuffle_epi8(ctr, mask), roundKey), _mm_load_si128((<span class="hljs-type">const</span> __m128i*)(buffer + offset))));<br>        offset += <span class="hljs-number">16</span>;<br>        ctr = _mm_add_epi64(ctr, _mm_set_epi64x(<span class="hljs-number">0</span>, <span class="hljs-number">1</span>));<br>    &#125;<br>    <span class="hljs-keyword">else</span> &#123;<br>        <span class="hljs-type">uint8_t</span> temp[<span class="hljs-number">16</span>] = &#123;<span class="hljs-number">0</span>&#125;;<br>        <span class="hljs-keyword">for</span> (<span class="hljs-type">int</span> i = <span class="hljs-number">0</span>; i &lt; remaining; i++) temp[i] = buffer[i];<br>        _mm_store_si128((__m128i*)temp, _mm_xor_si128(_AES_Encrypt(_mm_shuffle_epi8(ctr, mask), roundKey), _mm_load_si128((<span class="hljs-type">const</span> __m128i*)temp)));<br>        <span class="hljs-keyword">for</span> (<span class="hljs-type">int</span> i = <span class="hljs-number">0</span>; i &lt; remaining; i++) buffer[i] = temp[i];<br>        <span class="hljs-keyword">break</span>;<br>    &#125;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p>就写到这里吧，剩下的模式懒得实现了，这3种够用（笑</p>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+  
+    <div class="post-meta">
+      <i class="iconfont icon-tags"></i>
+      
+        <a href="/tags/%E7%BC%96%E7%A8%8B/" class="print-no-link">#编程</a>
+      
+        <a href="/tags/%E7%BD%91%E7%BB%9C%E5%AE%89%E5%85%A8/" class="print-no-link">#网络安全</a>
+      
+        <a href="/tags/%E5%AF%86%E7%A0%81%E5%AD%A6/" class="print-no-link">#密码学</a>
+      
+    </div>
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>【编程】AES-NI指令集实现快速AES加解密</div>
+      <div>https://crackme.net/articles/simd_aes/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>Brassinolide</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2024年12月30日</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by-nc-sa/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-cc-by"></i>
+                  </span>
+                </a>
+              
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by-nc-sa/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="NC - 非商业性使用">
+                    <i class="iconfont icon-cc-nc"></i>
+                  </span>
+                </a>
+              
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by-nc-sa/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="SA - 相同方式共享">
+                    <i class="iconfont icon-cc-sa"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/articles/tsa/" title="使用免费时间戳服务器签名任意文件，保护知识产权">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">使用免费时间戳服务器签名任意文件，保护知识产权</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/articles/aliddns/" title="python实现阿里云ddns">
+                        <span class="hidden-mobile">python实现阿里云ddns</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+  
+  
+    <article id="comments" lazyload>
+      
+  <script type="text/javascript">
+    Fluid.utils.loadComments('#comments', function() {
+      var light = 'github-light';
+      var dark = 'github-dark';
+      var schema = document.documentElement.getAttribute('data-user-color-scheme');
+      if (schema === 'dark') {
+        schema = dark;
+      } else {
+        schema = light;
+      }
+      window.UtterancesThemeLight = light;
+      window.UtterancesThemeDark = dark;
+      var s = document.createElement('script');
+      s.setAttribute('src', 'https://utteranc.es/client.js');
+      s.setAttribute('repo', 'Brassinolide/Brassinolide.github.io');
+      s.setAttribute('issue-term', 'pathname');
+      
+      s.setAttribute('label', 'utterances');
+      
+      s.setAttribute('theme', schema);
+      s.setAttribute('crossorigin', 'anonymous');
+      document.getElementById('comments').appendChild(s);
+    })
+  </script>
+  <noscript>Please enable JavaScript to view the comments</noscript>
+
+
+    </article>
+  
+
+
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+  
+  
+
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       框架 <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> | 主题 <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> <div style="font-size: 0.85rem"> <span id="timeDate">载入天数...</span> <span id="times">载入时分秒...</span> <script src="/js/duration.js"></script> </div> 
+    </div>
+  
+  
+    <div class="statistics">
+  
+  
+
+  
+    
+      <span id="busuanzi_container_site_pv" style="display: none">
+        总访问量 
+        <span id="busuanzi_value_site_pv"></span>
+         次
+      </span>
+    
+    
+      <span id="busuanzi_container_site_uv" style="display: none">
+        总访客数 
+        <span id="busuanzi_value_site_uv"></span>
+         人
+      </span>
+    
+    
+
+  
+
+</div>
+
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":true,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.4/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  var relativeDate = function() {
+    var updatedTime = document.getElementById('updated-time');
+    if (updatedTime) {
+      var text = updatedTime.textContent;
+      var reg = /\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:Z|[+-]\d{2}:\d{2})/;
+      var matchs = text.match(reg);
+      if (matchs) {
+        var relativeTime = moment(matchs[0]).fromNow();
+        updatedTime.textContent = text.replace(reg, relativeTime);
+      }
+      updatedTime.style.display = '';
+    }
+  };
+  Fluid.utils.createScript('https://lib.baomitu.com/moment.js/2.29.4/moment.min.js', function() {
+    if (!'zh-cn'.startsWith('en')) {
+      Fluid.utils.createScript('https://lib.baomitu.com/moment.js/2.29.4/locale/zh-cn.min.js', function() {
+        relativeDate();
+      });
+    } else {
+      relativeDate();
+    }
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.20.1/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/5.0.0/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script  src="/js/local-search.js" ></script>
+
+  <script defer src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js" ></script>
+
+
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>
